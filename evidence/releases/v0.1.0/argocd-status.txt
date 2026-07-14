@@ -1,0 +1,3 @@
+NOT RUN
+
+No Argo CD installation was attempted because the public GitOps repository is not yet available.

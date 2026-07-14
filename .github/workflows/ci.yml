@@ -1,0 +1,32 @@
+name: platform-ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  static-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-kubectl@v4
+      - uses: ludeeus/action-shellcheck@2.0.0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install validation tools
+        run: |
+          pip install yamllint
+          npm install --global markdownlint-cli
+      - name: Verify Makefile targets
+        run: ./tests/static/test-makefile.sh
+      - name: Lint
+        run: make lint
+      - name: Validate platform artifacts
+        run: make validate
+      - name: Check whitespace
+        run: git diff --check

@@ -1,0 +1,15 @@
+.DS_Store
+__pycache__/
+*.pyc
+.env
+.env.*
+*.secret
+*.token
+*.key
+*.pem
+*.tmp
+*.log
+*.tar
+config/platform.env.local
+evidence/releases/v0.1.0/*.local
+evidence/releases/v0.1.0/*.tmp

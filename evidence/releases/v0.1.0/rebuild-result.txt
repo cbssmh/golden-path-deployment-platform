@@ -1,0 +1,3 @@
+NOT RUN
+
+The required destroy/bootstrap/verify rebuild sequence was not run because the public GitOps repository is not yet available.
