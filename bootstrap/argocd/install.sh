@@ -6,7 +6,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 source "${ROOT_DIR}/scripts/load-config.sh"
 
 kubectl create namespace "${ARGOCD_NAMESPACE}" --dry-run=client -o yaml | kubectl apply -f -
-kubectl apply -n "${ARGOCD_NAMESPACE}" \
+kubectl apply --server-side -n "${ARGOCD_NAMESPACE}" \
   -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 kubectl wait --namespace "${ARGOCD_NAMESPACE}" --for=condition=Available deployment/argocd-server --timeout=300s
 
