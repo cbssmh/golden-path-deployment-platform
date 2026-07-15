@@ -7,7 +7,9 @@ source "${ROOT_DIR}/scripts/load-config.sh"
 
 tmp_response="$(mktemp)"
 cleanup() {
-  [[ -n "${port_forward_pid:-}" ]] && kill "${port_forward_pid}" 2>/dev/null || true
+  if [[ -n "${port_forward_pid:-}" ]]; then
+    kill "${port_forward_pid}" 2>/dev/null || true
+  fi
   rm -f "${tmp_response}"
 }
 trap cleanup EXIT
