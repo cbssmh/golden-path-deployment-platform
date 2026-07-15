@@ -1,8 +1,13 @@
 # Golden Path Deployment Platform
 
-Small SaaS teams often have application code but no repeatable path from an empty local machine to a declaratively deployed service. This repository provides that minimum platform path for v0.1.0: a kind cluster, Argo CD bootstrap, and a GitOps-managed example service.
+Small SaaS teams often have application code but no repeatable path from an
+empty local machine to a declaratively deployed service. This repository
+provides that minimum platform path for v0.1.0: a kind cluster, Argo CD
+bootstrap, and a GitOps-managed example service.
 
-**Current state: IMPLEMENTED BUT NOT RUNTIME VERIFIED.** The Runtime Verification requires the public GitOps repository to be created and populated first. This is not a production-ready platform.
+**Current state: IMPLEMENTED BUT NOT RUNTIME VERIFIED.** The Runtime
+Verification requires the public GitOps repository to be created and populated
+first. This is not a production-ready platform.
 
 ## Target users
 
@@ -22,19 +27,24 @@ flowchart LR
 
 ## Repository responsibilities
 
-| Repository | URL and responsibility |
+| Repository | Responsibility |
 | --- | --- |
-| `golden-path-deployment-platform` | `https://github.com/cbssmh/golden-path-deployment-platform.git`; kind, Argo CD, Root Application, verification, documentation |
-| `golden-path-gitops` | `https://github.com/cbssmh/golden-path-gitops.git`; Kubernetes desired state and Kustomize overlays |
-| `golden-path-example-services` | `https://github.com/cbssmh/golden-path-example-services.git`; Service A code, image build, and CI |
+| `golden-path-deployment-platform` | Bootstrap, verification, documentation |
+| `golden-path-gitops` | Kubernetes desired state and Kustomize overlays |
+| `golden-path-example-services` | Service A code, image build, and CI |
 
 ## Prerequisites
 
-Docker daemon, kind, kubectl (including `kubectl kustomize`), make, and git are required. ShellCheck, yamllint, and kubeconform are optional locally and report explicit skips when absent.
+Docker daemon, kind, kubectl (including `kubectl kustomize`), make, and git
+are required. ShellCheck, yamllint, and kubeconform are optional locally and
+report explicit skips when absent.
 
 ## Configuration
 
-Platform values are centralized in [`config/platform.env.example`](config/platform.env.example). Its default GitOps URL is `https://github.com/cbssmh/golden-path-gitops.git` on branch `main`. The GitOps repository must be public in v0.1.0. No credentials are configured automatically.
+Platform values are centralized in
+[`config/platform.env.example`](config/platform.env.example). Its default
+GitOps URL targets the `main` branch. The GitOps repository must be public in
+v0.1.0. No credentials are configured automatically.
 
 ## Quick start
 
@@ -48,16 +58,24 @@ make bootstrap
 make verify
 ```
 
-The GitOps repository must first be available as the public `https://github.com/cbssmh/golden-path-gitops.git` remote. Service A is never directly applied by Platform scripts; the Root Application points Argo CD to the GitOps repository.
+The GitOps repository must first be available as the configured public remote.
+Service A is never directly applied by Platform scripts; the Root Application
+points Argo CD to the GitOps repository.
 
 ## Verification and rebuild
 
-Run `make service-a-check` to port-forward the Service and assert its JSON response. Run the full rebuild sequence in [the rebuild runbook](runbooks/platform-rebuild.md).
+Run `make service-a-check` to port-forward the Service and assert its JSON
+response. Run the full rebuild sequence in
+[the rebuild runbook](runbooks/platform-rebuild.md).
 
 ## Scope and non-goals
 
-v0.1.0 includes one dev service, kind, Argo CD, Kustomize, automation, and verification. It excludes Service B, stage, image-update automation, automated PRs, Terraform, AWS/EKS, monitoring, HPA, NetworkPolicy, secrets management, multi-cluster, databases, authentication, APIs, and AI features.
+v0.1.0 includes one dev service, kind, Argo CD, Kustomize, automation, and
+verification. It excludes Service B, stage, image-update automation,
+automated PRs, Terraform, AWS/EKS, monitoring, HPA, NetworkPolicy, secrets
+management, multi-cluster, databases, authentication, APIs, and AI features.
 
 ## Version strategy and documentation
 
-See [docs/version-strategy.md](docs/version-strategy.md), [docs](docs), and [known limitations](evidence/releases/v0.1.0/known-limitations.md).
+See [version strategy](docs/version-strategy.md), [docs](docs), and
+[known limitations](evidence/releases/v0.1.0/known-limitations.md).
