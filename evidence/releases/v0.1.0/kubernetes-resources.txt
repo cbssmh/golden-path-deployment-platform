@@ -1,18 +1,47 @@
-PASS — final rebuild resource snapshot — 2026-07-16
+$ kind get clusters
+golden-path
 
-Nodes:
-  golden-path-control-plane   Ready   control-plane   v1.36.1
+$ kubectl get nodes -o wide
+NAME                        STATUS   ROLES           AGE     VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE                       KERNEL-VERSION             CONTAINER-RUNTIME
+golden-path-control-plane   Ready    control-plane   2m25s   v1.36.1   172.20.0.2    <none>        Debian GNU/Linux 13 (trixie)   6.12.76-linuxkit (arm64)   containerd://2.3.1
 
-Namespaces:
-  argocd, default, dev, kube-node-lease, kube-public, kube-system,
-  local-path-storage: Active
+$ kubectl get pods -n argocd
+NAME                                                READY   STATUS    RESTARTS   AGE
+argocd-application-controller-0                     1/1     Running   0          2m4s
+argocd-applicationset-controller-7d4d7c7b89-n5722   1/1     Running   0          2m4s
+argocd-dex-server-cbddb9676-hqwfl                   1/1     Running   0          2m4s
+argocd-notifications-controller-7b55c64b69-8h44l    1/1     Running   0          2m4s
+argocd-redis-68bc658cfb-9ts2c                       1/1     Running   0          2m4s
+argocd-repo-server-56c67cf674-zwhkd                 1/1     Running   0          2m4s
+argocd-server-66b7d96445-h2xw5                      1/1     Running   0          2m4s
 
-Argo CD Pods:
-  argocd-application-controller, argocd-applicationset-controller,
-  argocd-dex-server, argocd-notifications-controller, argocd-redis,
-  argocd-repo-server, argocd-server: 1/1 Running
+$ kubectl get deployments -n argocd
+NAME                               READY   UP-TO-DATE   AVAILABLE   AGE
+argocd-applicationset-controller   1/1     1            1           2m4s
+argocd-dex-server                  1/1     1            1           2m4s
+argocd-notifications-controller    1/1     1            1           2m4s
+argocd-redis                       1/1     1            1           2m4s
+argocd-repo-server                 1/1     1            1           2m4s
+argocd-server                      1/1     1            1           2m4s
 
-Dev resources:
-  deployment/service-a: 1/1 Ready, 1 Available
-  pod/service-a: 1/1 Running
-  service/service-a: ClusterIP port 8080
+$ kubectl get applications -n argocd -o wide
+NAME                SYNC STATUS   HEALTH STATUS   REVISION                                   PROJECT
+root-applications   Synced        Healthy         716e7f5552bae5a6876027b1119977f24599d69c   default
+service-a           Synced        Healthy         716e7f5552bae5a6876027b1119977f24599d69c   default
+
+$ kubectl get deployment -n dev service-a
+NAME        READY   UP-TO-DATE   AVAILABLE   AGE
+service-a   1/1     1            1           29s
+
+$ kubectl get pods -n dev -o wide
+NAME                         READY   STATUS    RESTARTS   AGE   IP            NODE                        NOMINATED NODE   READINESS GATES
+service-a-85bfd76b85-qpbjl   1/1     Running   0          29s   10.244.0.12   golden-path-control-plane   <none>           <none>
+
+$ kubectl get service -n dev service-a
+NAME        TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+service-a   ClusterIP   10.96.163.243   <none>        8080/TCP   29s
+
+$ kubectl get endpoints -n dev service-a
+Warning: v1 Endpoints is deprecated in v1.33+; use discovery.k8s.io/v1 EndpointSlice
+NAME        ENDPOINTS          AGE
+service-a   10.244.0.12:8080   29s

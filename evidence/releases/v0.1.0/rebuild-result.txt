@@ -71,3 +71,275 @@ local-path-storage   deployment.apps/local-path-provisioner   1/1     1         
 NAMESPACE     NAME                        DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
 kube-system   daemonset.apps/kindnet      1         1         1       1            1           kubernetes.io/os=linux   35s
 kube-system   daemonset.apps/kube-proxy   1         1         1       1            1           kubernetes.io/os=linux   36s
+
+Full Platform Destroy/Rebuild Verification — 2026-07-16
+
+Pre-destroy commands executed:
+  kind get clusters
+  kubectl get applications -n argocd -o wide
+  kubectl get nodes
+  kubectl get all -n argocd
+  kubectl get all -n dev
+
+Pre-destroy output:
+golden-path
+NAME                SYNC STATUS   HEALTH STATUS   REVISION                                   PROJECT
+root-applications   Synced        Healthy         716e7f5552bae5a6876027b1119977f24599d69c   default
+service-a           Synced        Healthy         716e7f5552bae5a6876027b1119977f24599d69c   default
+NAME                        STATUS   ROLES           AGE   VERSION
+golden-path-control-plane   Ready    control-plane   22m   v1.36.1
+
+Destroy command executed:
+  ./bootstrap/destroy.sh
+
+Destroy output:
+Deleting cluster "golden-path" ...
+Deleted nodes: ["golden-path-control-plane"]
+Deleted kind cluster 'golden-path'.
+
+Absence-confirmation commands executed:
+  kind get clusters
+  kubectl get nodes
+  ps -ax -o pid=,command= | rg '[k]ubectl port-forward'
+
+Absence-confirmation output:
+No kind clusters found.
+E0716 23:21:38.894067   24484 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"http://localhost:8080/api?timeout=32s\": dial tcp [::1]:8080: connect: connection refused"
+E0716 23:21:38.894542   24484 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"http://localhost:8080/api?timeout=32s\": dial tcp [::1]:8080: connect: connection refused"
+E0716 23:21:38.896028   24484 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"http://localhost:8080/api?timeout=32s\": dial tcp [::1]:8080: connect: connection refused"
+E0716 23:21:38.896235   24484 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"http://localhost:8080/api?timeout=32s\": dial tcp [::1]:8080: connect: connection refused"
+E0716 23:21:38.897444   24484 memcache.go:265] "Unhandled Error" err="couldn't get current server API group list: Get \"http://localhost:8080/api?timeout=32s\": dial tcp [::1]:8080: connect: connection refused"
+The connection to the server localhost:8080 was refused - did you specify the right host or port?
+
+Interrupted foreground installer attempts:
+  ./bootstrap/argocd/install.sh
+
+Actual captured output before the foreground execution session ended:
+Waiting for deployment "argocd-applicationset-controller" rollout to finish: 0 of 1 updated replicas are available...
+deployment "argocd-applicationset-controller" successfully rolled out
+Waiting for deployment "argocd-dex-server" rollout to finish: 0 of 1 updated replicas are available...
+deployment "argocd-dex-server" successfully rolled out
+deployment "argocd-notifications-controller" successfully rolled out
+Waiting for deployment "argocd-redis" rollout to finish: 0 of 1 updated replicas are available...
+
+Final successful rebuild commands executed:
+  ./bootstrap/kind/create-cluster.sh
+  kubectl get nodes
+  ./bootstrap/argocd/install.sh
+  ./bootstrap/argocd/apply-root-application.sh
+  ./scripts/verify-platform.sh
+  kind get clusters
+  kubectl get pods -n argocd
+  kubectl get deployments -n argocd
+  kubectl get applications -n argocd -o wide
+  kubectl get deployment -n dev service-a
+  kubectl get pods -n dev -o wide
+  kubectl get endpoints -n dev service-a
+  kubectl get all -n dev
+  ../golden-path-gitops/scripts/validate.sh
+
+Kind rebuild output:
+No kind clusters found.
+Creating cluster "golden-path" ...
+ • Ensuring node image (kindest/node:v1.36.1) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.36.1) 🖼
+ • Preparing nodes 📦   ...
+ ✓ Preparing nodes 📦
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+Set kubectl context to "kind-golden-path"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-golden-path
+
+Have a question, bug, or feature request? Let us know! https://kind.sigs.k8s.io/#community 🙂
+node/golden-path-control-plane condition met
+Cluster 'golden-path' is ready with context 'kind-golden-path'.
+NAME                        STATUS   ROLES           AGE   VERSION
+golden-path-control-plane   Ready    control-plane   24s   v1.36.1
+
+Argo CD rebuild output:
+namespace/argocd created
+Waiting for deployment "argocd-applicationset-controller" rollout to finish: 0 of 1 updated replicas are available...
+deployment "argocd-applicationset-controller" successfully rolled out
+Waiting for deployment "argocd-dex-server" rollout to finish: 0 of 1 updated replicas are available...
+deployment "argocd-dex-server" successfully rolled out
+deployment "argocd-notifications-controller" successfully rolled out
+Waiting for deployment "argocd-redis" rollout to finish: 0 of 1 updated replicas are available...
+deployment "argocd-redis" successfully rolled out
+Waiting for deployment "argocd-repo-server" rollout to finish: 0 of 1 updated replicas are available...
+deployment "argocd-repo-server" successfully rolled out
+Waiting for deployment "argocd-server" rollout to finish: 0 of 1 updated replicas are available...
+deployment "argocd-server" successfully rolled out
+partitioned roll out complete: 1 new pods have been updated...
+Argo CD is installed.
+
+Root Application and Service A reconciliation output:
+application.argoproj.io/root-applications created
+Root Application is applied.
+node/golden-path-control-plane condition met
+deployment.apps/argocd-server condition met
+Application 'root-applications' is Synced and Healthy.
+Application 'service-a' is Synced and Healthy.
+deployment "service-a" successfully rolled out
+pod/service-a-85bfd76b85-czr9q condition met
+{"service": "service-a", "version": "0.1.0", "status": "running"}/Users/cbssmh/Documents/Golden Path Deployment Platform/scripts/check-service-a.sh: line 9: 28552 Terminated: 15          kubectl port-forward -n "${SERVICE_A_NAMESPACE}" "service/${SERVICE_A_NAME}" "${SERVICE_A_PORT}:${SERVICE_A_PORT}" > /dev/null 2>&1
+
+Final rebuilt state:
+golden-path
+NAME                                                READY   STATUS    RESTARTS   AGE
+argocd-application-controller-0                     1/1     Running   0          104s
+argocd-applicationset-controller-7d4d7c7b89-jfcgz   1/1     Running   0          104s
+argocd-dex-server-cbddb9676-5slxk                   1/1     Running   0          104s
+argocd-notifications-controller-7b55c64b69-pr5qs    1/1     Running   0          104s
+argocd-redis-68bc658cfb-595fj                       1/1     Running   0          104s
+argocd-repo-server-56c67cf674-cv6k6                 1/1     Running   0          104s
+argocd-server-66b7d96445-fzzrc                      1/1     Running   0          104s
+NAME                               READY   UP-TO-DATE   AVAILABLE   AGE
+argocd-applicationset-controller   1/1     1            1           104s
+argocd-dex-server                  1/1     1            1           104s
+argocd-notifications-controller    1/1     1            1           104s
+argocd-redis                       1/1     1            1           104s
+argocd-repo-server                 1/1     1            1           104s
+argocd-server                      1/1     1            1           104s
+NAME                SYNC STATUS   HEALTH STATUS   REVISION                                   PROJECT
+root-applications   Synced        Healthy         716e7f5552bae5a6876027b1119977f24599d69c   default
+service-a           Synced        Healthy         716e7f5552bae5a6876027b1119977f24599d69c   default
+NAME        READY   UP-TO-DATE   AVAILABLE   AGE
+service-a   1/1     1            1           30s
+NAME                         READY   STATUS    RESTARTS   AGE   IP            NODE                        NOMINATED NODE   READINESS GATES
+service-a-85bfd76b85-czr9q   1/1     Running   0          30s   10.244.0.12   golden-path-control-plane   <none>           <none>
+Warning: v1 Endpoints is deprecated in v1.33+; use discovery.k8s.io/v1 EndpointSlice
+NAME        ENDPOINTS          AGE
+service-a   10.244.0.12:8080   30s
+
+GitOps validation output:
+SKIP: kubeconform is not installed.
+PASS: GitOps validation completed.
+
+Final clean make bootstrap verification — 2026-07-16
+
+Command executed:
+  make bootstrap
+
+Output:
+PASS: docker found at /usr/local/bin/docker
+PASS: kind found at /opt/homebrew/bin/kind
+PASS: kubectl found at /usr/local/bin/kubectl
+PASS: make found at /usr/bin/make
+PASS: git found at /usr/bin/git
+PASS: curl found at /usr/bin/curl
+PASS: Kustomize is available through kubectl kustomize.
+PASS: Docker daemon is reachable.
+SKIP: optional shellcheck is not installed.
+SKIP: optional yamllint is not installed.
+SKIP: optional kubeconform is not installed.
+No kind clusters found.
+Creating cluster "golden-path" ...
+ • Ensuring node image (kindest/node:v1.36.1) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.36.1) 🖼
+ • Preparing nodes 📦   ...
+ ✓ Preparing nodes 📦
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+Set kubectl context to "kind-golden-path"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-golden-path
+
+Have a question, bug, or feature request? Let us know! https://kind.sigs.k8s.io/#community 🙂
+node/golden-path-control-plane condition met
+Cluster 'golden-path' is ready with context 'kind-golden-path'.
+namespace/argocd created
+customresourcedefinition.apiextensions.k8s.io/applications.argoproj.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/applicationsets.argoproj.io serverside-applied
+customresourcedefinition.apiextensions.k8s.io/appprojects.argoproj.io serverside-applied
+serviceaccount/argocd-application-controller serverside-applied
+serviceaccount/argocd-applicationset-controller serverside-applied
+serviceaccount/argocd-dex-server serverside-applied
+serviceaccount/argocd-notifications-controller serverside-applied
+serviceaccount/argocd-redis serverside-applied
+serviceaccount/argocd-repo-server serverside-applied
+serviceaccount/argocd-server serverside-applied
+role.rbac.authorization.k8s.io/argocd-application-controller serverside-applied
+role.rbac.authorization.k8s.io/argocd-applicationset-controller serverside-applied
+role.rbac.authorization.k8s.io/argocd-dex-server serverside-applied
+role.rbac.authorization.k8s.io/argocd-notifications-controller serverside-applied
+role.rbac.authorization.k8s.io/argocd-redis serverside-applied
+role.rbac.authorization.k8s.io/argocd-server serverside-applied
+clusterrole.rbac.authorization.k8s.io/argocd-application-controller serverside-applied
+clusterrole.rbac.authorization.k8s.io/argocd-applicationset-controller serverside-applied
+clusterrole.rbac.authorization.k8s.io/argocd-server serverside-applied
+rolebinding.rbac.authorization.k8s.io/argocd-application-controller serverside-applied
+rolebinding.rbac.authorization.k8s.io/argocd-applicationset-controller serverside-applied
+rolebinding.rbac.authorization.k8s.io/argocd-dex-server serverside-applied
+rolebinding.rbac.authorization.k8s.io/argocd-notifications-controller serverside-applied
+rolebinding.rbac.authorization.k8s.io/argocd-redis serverside-applied
+rolebinding.rbac.authorization.k8s.io/argocd-server serverside-applied
+clusterrolebinding.rbac.authorization.k8s.io/argocd-application-controller serverside-applied
+clusterrolebinding.rbac.authorization.k8s.io/argocd-applicationset-controller serverside-applied
+clusterrolebinding.rbac.authorization.k8s.io/argocd-server serverside-applied
+configmap/argocd-cm serverside-applied
+configmap/argocd-cmd-params-cm serverside-applied
+configmap/argocd-gpg-keys-cm serverside-applied
+configmap/argocd-notifications-cm serverside-applied
+configmap/argocd-rbac-cm serverside-applied
+configmap/argocd-ssh-known-hosts-cm serverside-applied
+configmap/argocd-tls-certs-cm serverside-applied
+secret/argocd-notifications-secret serverside-applied
+secret/argocd-secret serverside-applied
+service/argocd-applicationset-controller serverside-applied
+service/argocd-dex-server serverside-applied
+service/argocd-metrics serverside-applied
+service/argocd-notifications-controller-metrics serverside-applied
+service/argocd-redis serverside-applied
+service/argocd-repo-server serverside-applied
+service/argocd-server serverside-applied
+service/argocd-server-metrics serverside-applied
+deployment.apps/argocd-applicationset-controller serverside-applied
+deployment.apps/argocd-dex-server serverside-applied
+deployment.apps/argocd-notifications-controller serverside-applied
+deployment.apps/argocd-redis serverside-applied
+deployment.apps/argocd-repo-server serverside-applied
+deployment.apps/argocd-server serverside-applied
+statefulset.apps/argocd-application-controller serverside-applied
+networkpolicy.networking.k8s.io/argocd-application-controller-network-policy serverside-applied
+networkpolicy.networking.k8s.io/argocd-applicationset-controller-network-policy serverside-applied
+networkpolicy.networking.k8s.io/argocd-dex-server-network-policy serverside-applied
+networkpolicy.networking.k8s.io/argocd-notifications-controller-network-policy serverside-applied
+networkpolicy.networking.k8s.io/argocd-redis-network-policy serverside-applied
+networkpolicy.networking.k8s.io/argocd-repo-server-network-policy serverside-applied
+networkpolicy.networking.k8s.io/argocd-server-network-policy serverside-applied
+Waiting for deployment "argocd-applicationset-controller" rollout to finish: 0 of 1 updated replicas are available...
+deployment "argocd-applicationset-controller" successfully rolled out
+Waiting for deployment "argocd-dex-server" rollout to finish: 0 of 1 updated replicas are available...
+deployment "argocd-dex-server" successfully rolled out
+deployment "argocd-notifications-controller" successfully rolled out
+Waiting for deployment "argocd-redis" rollout to finish: 0 of 1 updated replicas are available...
+deployment "argocd-redis" successfully rolled out
+Waiting for deployment "argocd-repo-server" rollout to finish: 0 of 1 updated replicas are available...
+deployment "argocd-repo-server" successfully rolled out
+deployment "argocd-server" successfully rolled out
+partitioned roll out complete: 1 new pods have been updated...
+Argo CD is installed.
+application.argoproj.io/root-applications created
+Root Application is applied.
+node/golden-path-control-plane condition met
+deployment.apps/argocd-server condition met
+Application 'root-applications' is Synced and Healthy.
+Application 'service-a' is Synced and Healthy.
+deployment "service-a" successfully rolled out
+pod/service-a-85bfd76b85-qpbjl condition met
+{"service": "service-a", "version": "0.1.0", "status": "running"}/Users/cbssmh/Documents/Golden Path Deployment Platform/scripts/check-service-a.sh: line 9: 31990 Terminated: 15          kubectl port-forward -n "${SERVICE_A_NAMESPACE}" "service/${SERVICE_A_NAME}" "${SERVICE_A_PORT}:${SERVICE_A_PORT}" > /dev/null 2>&1

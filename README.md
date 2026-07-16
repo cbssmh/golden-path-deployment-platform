@@ -5,15 +5,21 @@ empty local machine to a declaratively deployed service. This repository
 provides that minimum platform path for v0.1.0: a kind cluster, Argo CD
 bootstrap, and a GitOps-managed example service.
 
-**Current implementation progress: KIND BOOTSTRAP RUNTIME VERIFIED ON LOCAL
-KIND.** Fresh creation, destruction, absence confirmation, and rebuild with
+**Current implementation progress: COMPLETE V0.1.0 RUNTIME WORKFLOW VERIFIED
+ON LOCAL KIND.** Fresh creation, destruction, absence confirmation, and rebuild with
 the repository scripts succeeded; the rebuilt control-plane reached `Ready`.
 Evidence is recorded in
 [`bootstrap-result.txt`](evidence/releases/v0.1.0/bootstrap-result.txt) and
 [`rebuild-result.txt`](evidence/releases/v0.1.0/rebuild-result.txt). Argo CD
-and Service A have not yet been runtime verified as part of current progress,
-and the full v0.1.0 release is not yet complete. This is not a
-production-ready platform.
+Bootstrap and the Root Application have also been runtime verified. Argo CD
+recognized `root-applications` as `Synced` and `Healthy`; its frozen source
+automatically created a `service-a` child Application and a Service A workload
+was observed. Service A runtime verification now confirms the Application is
+`Synced`/`Healthy`, its Deployment and Pod are Ready, its Service has an active
+endpoint, and its expected JSON response is reachable through temporary
+port-forwarding. The full destroy/rebuild workflow has also been runtime
+verified with the repository scripts and GitOps reconciliation path. This is
+not a production-ready platform.
 
 ## Golden Path
 
@@ -63,31 +69,30 @@ v0.1.0. No credentials are configured automatically.
 ## Quick start
 
 ```bash
-cd ../golden-path-gitops
-./scripts/configure.sh
-cd ../Golden\ Path\ Deployment\ Platform
 cp config/platform.env.example config/platform.env.local
 make prerequisites
-make bootstrap
-make verify
+./bootstrap/kind/create-cluster.sh
+./bootstrap/argocd/install.sh
+./bootstrap/argocd/apply-root-application.sh
+./scripts/verify-platform.sh
+../golden-path-gitops/scripts/validate.sh
 ```
 
 The GitOps repository must first be available as the configured public remote.
 Service A is never directly applied by Platform scripts; the Root Application
-points Argo CD to the GitOps repository.
+points Argo CD to the GitOps repository. Use
+`./bootstrap/destroy.sh` before repeating the full rebuild sequence.
 
 ## Verification and rebuild
 
-The following is the planned v0.1.0 Runtime Verification. Only the kind
-Bootstrap lifecycle is currently runtime verified; Argo CD and Service A are
-not yet runtime verified:
+The v0.1.0 Runtime Verification completed successfully on local kind:
 
 - `make bootstrap` creates the cluster, installs Argo CD, and applies the
   Root Application.
 - Root Application and Service A Application reach `Synced` and `Healthy`.
 - Service A reaches one available replica with a Ready Pod.
 - `make service-a-check` returns the expected JSON response.
-- `make destroy`, followed by Bootstrap and verification, reproduces the same
+- `make destroy`, followed by `make bootstrap`, reproduces the same
   successful state.
 
 The recorded command results are versioned in
@@ -96,8 +101,8 @@ sequence in [the rebuild runbook](runbooks/platform-rebuild.md).
 
 ## Success criteria
 
-The following are planned v0.1.0 success criteria. Only the kind lifecycle is
-verified in the recorded runtime evidence:
+The following v0.1.0 success criteria are verified in the recorded runtime
+evidence:
 
 - Bootstrap creates the kind cluster and installs Argo CD successfully.
 - GitOps desired state deploys Service A through Argo CD.
@@ -108,7 +113,7 @@ verified in the recorded runtime evidence:
 - Service A is deployed by Argo CD without a direct `kubectl apply` of its
   application manifests.
 - Destroy and rebuild recreate the same healthy state.
-- Full Runtime Verification must be completed and its evidence recorded in Git.
+- Full Runtime Verification is complete and its evidence is recorded in Git.
 
 ## Known limitations
 

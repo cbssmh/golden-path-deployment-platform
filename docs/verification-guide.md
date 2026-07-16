@@ -9,5 +9,6 @@ response fields `service-a`, `0.1.0`, and `running`.
 
 ## Current verification state
 
-IMPLEMENTED BUT NOT RUNTIME VERIFIED. The public GitOps repository must be
-created and populated on `main` before these runtime commands can succeed.
+RUNTIME VERIFIED on 2026-07-16. The complete kind, Argo CD, Root Application,
+Service A, and destroy/rebuild lifecycle is recorded in
+`docs/runtime-verification.md` and `evidence/releases/v0.1.0/`.

@@ -1,9 +1,169 @@
-PASS — 2026-07-16
+Root Application runtime verification — 2026-07-16
 
-make verify confirmed:
-  - kind-golden-path context and Ready node
-  - available argocd-server deployment
-  - root-applications: Synced and Healthy
-  - service-a: Synced and Healthy
-  - Service A deployment rollout and Ready Pod
-  - Service A HTTP JSON response
+Commands executed:
+  kubectl get applications -n argocd
+  ./bootstrap/argocd/apply-root-application.sh
+  kubectl get applications -n argocd
+  kubectl get application -n argocd root-applications -o yaml
+  kubectl get applications -n argocd -o wide
+  kubectl get all -A
+  kubectl get namespaces
+
+Output from pre-apply kubectl get applications -n argocd:
+No resources found in argocd namespace.
+
+Output from ./bootstrap/argocd/apply-root-application.sh:
+application.argoproj.io/root-applications created
+Root Application is applied.
+
+Output from kubectl get applications -n argocd:
+NAME                SYNC STATUS   HEALTH STATUS
+root-applications   Synced        Healthy
+service-a           Synced        Healthy
+
+Actual fields observed in output from kubectl get application -n argocd root-applications -o yaml:
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  creationTimestamp: "2026-07-16T14:15:00Z"
+  name: root-applications
+  namespace: argocd
+spec:
+  destination:
+    namespace: argocd
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    path: applications/root
+    repoURL: https://github.com/cbssmh/golden-path-gitops.git
+    targetRevision: main
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: false
+    syncOptions:
+    - CreateNamespace=true
+status:
+  health:
+    status: Healthy
+  operationState:
+    message: successfully synced (all tasks run)
+    phase: Succeeded
+    syncResult:
+      resources:
+      - group: argoproj.io
+        kind: Application
+        message: application.argoproj.io/service-a created
+        name: service-a
+        namespace: argocd
+        status: Synced
+  sync:
+    revision: 716e7f5552bae5a6876027b1119977f24599d69c
+    status: Synced
+
+Output from kubectl get applications -n argocd -o wide:
+NAME                SYNC STATUS   HEALTH STATUS   REVISION                                   PROJECT
+root-applications   Synced        Healthy         716e7f5552bae5a6876027b1119977f24599d69c   default
+service-a           Synced        Healthy         716e7f5552bae5a6876027b1119977f24599d69c   default
+
+Observed Service A resources from kubectl get all -A:
+NAMESPACE   NAME                                           READY   STATUS    RESTARTS   AGE
+dev         pod/service-a-85bfd76b85-5fmfk                 1/1     Running   0          28s
+
+NAMESPACE   NAME                         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+dev         service/service-a            ClusterIP   10.96.117.246   <none>        8080/TCP   28s
+
+NAMESPACE   NAME                            READY   UP-TO-DATE   AVAILABLE   AGE
+dev         deployment.apps/service-a       1/1     1            1           28s
+
+Output from kubectl get namespaces:
+NAME                 STATUS   AGE
+argocd               Active   5m5s
+default              Active   16m
+dev                  Active   28s
+kube-node-lease      Active   16m
+kube-public          Active   16m
+kube-system          Active   16m
+local-path-storage   Active   16m
+
+Service A runtime verification — 2026-07-16
+
+Commands executed:
+  kubectl get application -n argocd root-applications -o yaml
+  kubectl get application -n argocd service-a -o yaml
+  kubectl get deployment -n dev service-a
+  kubectl rollout status deployment/service-a -n dev
+  kubectl get pods -n dev -o wide
+  kubectl get service -n dev service-a -o yaml
+  kubectl get endpoints -n dev service-a
+  kubectl get all -n dev
+  ./scripts/check-service-a.sh
+  ../golden-path-gitops/scripts/validate.sh
+
+Actual Service A Application fields observed in output from kubectl get application -n argocd service-a -o yaml:
+spec:
+  destination:
+    namespace: dev
+    server: https://kubernetes.default.svc
+  source:
+    path: services/service-a/overlays/dev
+    repoURL: https://github.com/cbssmh/golden-path-gitops.git
+    targetRevision: main
+status:
+  health:
+    status: Healthy
+  operationState:
+    message: successfully synced (all tasks run)
+    phase: Succeeded
+  sourceType: Kustomize
+  sync:
+    revision: 716e7f5552bae5a6876027b1119977f24599d69c
+    status: Synced
+
+Output from kubectl get deployment -n dev service-a:
+NAME        READY   UP-TO-DATE   AVAILABLE   AGE
+service-a   1/1     1            1           3m40s
+
+Output from kubectl rollout status deployment/service-a -n dev:
+deployment "service-a" successfully rolled out
+
+Output from kubectl get pods -n dev -o wide:
+NAME                         READY   STATUS    RESTARTS   AGE     IP            NODE                        NOMINATED NODE   READINESS GATES
+service-a-85bfd76b85-5fmfk   1/1     Running   0          3m40s   10.244.0.12   golden-path-control-plane   <none>           <none>
+
+Actual Service fields observed in output from kubectl get service -n dev service-a -o yaml:
+spec:
+  ports:
+  - name: http
+    port: 8080
+    protocol: TCP
+    targetPort: http
+  selector:
+    app.kubernetes.io/instance: service-a-dev
+    app.kubernetes.io/name: service-a
+  type: ClusterIP
+
+Output from kubectl get endpoints -n dev service-a:
+Warning: v1 Endpoints is deprecated in v1.33+; use discovery.k8s.io/v1 EndpointSlice
+NAME        ENDPOINTS          AGE
+service-a   10.244.0.12:8080   3m40s
+
+Output from kubectl get all -n dev:
+NAME                             READY   STATUS    RESTARTS   AGE
+pod/service-a-85bfd76b85-5fmfk   1/1     Running   0          3m40s
+
+NAME                TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+service/service-a   ClusterIP   10.96.117.246   <none>        8080/TCP   3m40s
+
+NAME                        READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/service-a   1/1     1            1           3m40s
+
+NAME                                   DESIRED   CURRENT   READY   AGE
+replicaset.apps/service-a-85bfd76b85   1         1         1       3m40s
+
+Output from ./scripts/check-service-a.sh:
+{"service": "service-a", "version": "0.1.0", "status": "running"}./scripts/check-service-a.sh: line 9: 23140 Terminated: 15          kubectl port-forward -n "${SERVICE_A_NAMESPACE}" "service/${SERVICE_A_NAME}" "${SERVICE_A_PORT}:${SERVICE_A_PORT}" > /dev/null 2>&1
+
+Output from ../golden-path-gitops/scripts/validate.sh:
+SKIP: kubeconform is not installed.
+PASS: GitOps validation completed.
