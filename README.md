@@ -9,6 +9,14 @@ bootstrap, and a GitOps-managed example service.
 Argo CD synchronization, Service A endpoint, and destroy/rebuild flow were
 executed successfully. This is not a production-ready platform.
 
+## Golden Path
+
+In v0.1.0, the Golden Path is the single deployment procedure officially
+supported by the Platform Team. It is the default route for developers to
+deploy Service A safely and consistently: GitOps desired state is reconciled
+by Argo CD instead of developers directly applying application resources to
+Kubernetes.
+
 ## Target users
 
 Small SaaS development teams evaluating a minimal local Kubernetes and GitOps foundation.
@@ -77,6 +85,22 @@ The v0.1.0 Runtime Verification completed successfully on local kind:
 The recorded command results are versioned in
 [`evidence/releases/v0.1.0`](evidence/releases/v0.1.0). Run the full rebuild
 sequence in [the rebuild runbook](runbooks/platform-rebuild.md).
+
+## Success criteria
+
+The following v0.1.0 outcomes have been verified in the recorded runtime
+evidence:
+
+- Bootstrap creates the kind cluster and installs Argo CD successfully.
+- GitOps desired state deploys Service A through Argo CD.
+- The Root Application is `Synced` and `Healthy`.
+- The Service A Application is `Synced` and `Healthy`, with an available
+  Deployment and a Ready Pod.
+- Service A returns the expected HTTP response.
+- Service A is deployed by Argo CD without a direct `kubectl apply` of its
+  application manifests.
+- Destroy and rebuild recreate the same healthy state.
+- Runtime Verification is complete and its evidence is recorded in Git.
 
 ## Known limitations
 

@@ -6,6 +6,13 @@ Application. The Root Application reads `applications/root` from the public
 GitOps repository. Argo CD then creates the Service A Application, which
 deploys the Kustomize dev overlay.
 
+## Developer experience
+
+For developers, the supported path is Developer -> Golden Path Platform ->
+GitOps -> Argo CD -> Kubernetes -> Application. Developers express a
+deployment change as GitOps desired state instead of directly operating
+Kubernetes application resources; Argo CD performs the reconciliation.
+
 ```mermaid
 sequenceDiagram
   participant U as Operator
