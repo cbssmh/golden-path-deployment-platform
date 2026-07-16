@@ -1,3 +1,12 @@
-NOT RUN
+PASS — 2026-07-16
 
-Reason: the public GitOps repository has not yet been created and populated. No cluster or Argo CD resources were created.
+Commands executed:
+  make destroy
+  make bootstrap
+
+Result:
+  - kind cluster golden-path created.
+  - Node reached Ready.
+  - Argo CD installed from the official stable manifest.
+  - Root Application applied and synchronized from the public GitOps repository.
+  - Service A was deployed only through Argo CD.

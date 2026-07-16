@@ -1,3 +1,8 @@
-NOT RUN
+PASS — final rebuild status — 2026-07-16
 
-No Argo CD installation was attempted because the public GitOps repository is not yet available.
+NAME                SYNC STATUS   HEALTH STATUS   REVISION
+root-applications   Synced        Healthy         716e7f5552bae5a6876027b1119977f24599d69c
+service-a           Synced        Healthy         716e7f5552bae5a6876027b1119977f24599d69c
+
+Both applications were reconciled by Argo CD from
+https://github.com/cbssmh/golden-path-gitops.git on main.

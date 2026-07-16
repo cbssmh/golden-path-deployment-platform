@@ -5,9 +5,9 @@ empty local machine to a declaratively deployed service. This repository
 provides that minimum platform path for v0.1.0: a kind cluster, Argo CD
 bootstrap, and a GitOps-managed example service.
 
-**Current state: IMPLEMENTED BUT NOT RUNTIME VERIFIED.** The Runtime
-Verification requires the public GitOps repository to be created and populated
-first. This is not a production-ready platform.
+**Current state: RUNTIME VERIFIED ON LOCAL KIND.** The documented Bootstrap,
+Argo CD synchronization, Service A endpoint, and destroy/rebuild flow were
+executed successfully. This is not a production-ready platform.
 
 ## Target users
 
@@ -64,9 +64,26 @@ points Argo CD to the GitOps repository.
 
 ## Verification and rebuild
 
-Run `make service-a-check` to port-forward the Service and assert its JSON
-response. Run the full rebuild sequence in
-[the rebuild runbook](runbooks/platform-rebuild.md).
+The v0.1.0 Runtime Verification completed successfully on local kind:
+
+- `make bootstrap` created the cluster, installed Argo CD, and applied the
+  Root Application.
+- Root Application and Service A Application reached `Synced` and `Healthy`.
+- Service A reached one available replica with a Ready Pod.
+- `make service-a-check` returned the expected JSON response.
+- `make destroy`, followed by Bootstrap and verification, reproduced the same
+  successful state.
+
+The recorded command results are versioned in
+[`evidence/releases/v0.1.0`](evidence/releases/v0.1.0). Run the full rebuild
+sequence in [the rebuild runbook](runbooks/platform-rebuild.md).
+
+## Known limitations
+
+v0.1.0 is a local kind foundation with one public GitOps repository, one dev
+Service A deployment, and manual fixed-image updates. Private Git repository
+authentication, automated image updates, cloud infrastructure, monitoring,
+rollback automation, and multi-cluster operation remain out of scope.
 
 ## Scope and non-goals
 

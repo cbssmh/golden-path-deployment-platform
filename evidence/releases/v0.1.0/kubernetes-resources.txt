@@ -1,3 +1,18 @@
-NOT RUN
+PASS — final rebuild resource snapshot — 2026-07-16
 
-No kind cluster was created because the public GitOps repository is not yet available, so Kubernetes resources have no runtime output to record.
+Nodes:
+  golden-path-control-plane   Ready   control-plane   v1.36.1
+
+Namespaces:
+  argocd, default, dev, kube-node-lease, kube-public, kube-system,
+  local-path-storage: Active
+
+Argo CD Pods:
+  argocd-application-controller, argocd-applicationset-controller,
+  argocd-dex-server, argocd-notifications-controller, argocd-redis,
+  argocd-repo-server, argocd-server: 1/1 Running
+
+Dev resources:
+  deployment/service-a: 1/1 Ready, 1 Available
+  pod/service-a: 1/1 Running
+  service/service-a: ClusterIP port 8080

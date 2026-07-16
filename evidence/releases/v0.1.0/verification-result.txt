@@ -1,3 +1,9 @@
-NOT RUN
+PASS — 2026-07-16
 
-Reason: runtime verification requires a reachable public GitOps repository, which has not yet been created and populated.
+make verify confirmed:
+  - kind-golden-path context and Ready node
+  - available argocd-server deployment
+  - root-applications: Synced and Healthy
+  - service-a: Synced and Healthy
+  - Service A deployment rollout and Ready Pod
+  - Service A HTTP JSON response

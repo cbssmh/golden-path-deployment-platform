@@ -1,8 +1,8 @@
 # Known limitations
 
-Runtime Kubernetes evidence has not yet been collected because the public
-GitOps repository has not been created and populated. kind is installed,
-Docker daemon access was verified, and the Service A container image built
-successfully. The committed configuration targets the public GitOps
-repository and cannot sync until that repository exists. No secrets, tokens,
-or Argo CD passwords are stored here.
+Runtime verification passed on a local kind cluster. This evidence does not
+claim production readiness. v0.1.0 remains limited to one public GitOps
+repository, one dev Service A deployment, and manual fixed-image updates.
+Private Git repository authentication, automated image updates, cloud
+infrastructure, monitoring, rollback automation, and multi-cluster operation
+remain out of scope. No secrets, tokens, or Argo CD passwords are stored here.

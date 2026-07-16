@@ -1,3 +1,15 @@
-NOT RUN
+PASS — 2026-07-16
 
-The required destroy/bootstrap/verify rebuild sequence was not run because the public GitOps repository is not yet available.
+Commands executed:
+  make destroy
+  make bootstrap
+  make verify
+  make service-a-check
+
+The rebuilt cluster reached the same state as the first successful run:
+  - Ready kind node
+  - Ready Argo CD Pods
+  - Root Application Synced and Healthy
+  - Service A Application Synced and Healthy
+  - Deployment available with one Ready Pod
+  - HTTP endpoint returned the expected JSON payload
