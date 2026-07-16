@@ -6,7 +6,8 @@ provides that minimum platform path for v0.1.0: a kind cluster, Argo CD
 bootstrap, and a GitOps-managed example service.
 
 **Current implementation progress: COMPLETE V0.1.0 RUNTIME WORKFLOW VERIFIED
-ON LOCAL KIND.** Fresh creation, destruction, absence confirmation, and rebuild with
+ON LOCAL KIND.** Fresh creation, destruction, absence confirmation, and
+rebuild with
 the repository scripts succeeded; the rebuilt control-plane reached `Ready`.
 Evidence is recorded in
 [`bootstrap-result.txt`](evidence/releases/v0.1.0/bootstrap-result.txt) and
@@ -31,7 +32,8 @@ Kubernetes.
 
 ## Target users
 
-Small SaaS development teams evaluating a minimal local Kubernetes and GitOps foundation.
+Small SaaS development teams evaluating a minimal local Kubernetes and GitOps
+foundation.
 
 ## Architecture
 
