@@ -5,9 +5,15 @@ empty local machine to a declaratively deployed service. This repository
 provides that minimum platform path for v0.1.0: a kind cluster, Argo CD
 bootstrap, and a GitOps-managed example service.
 
-**Current state: RUNTIME VERIFIED ON LOCAL KIND.** The documented Bootstrap,
-Argo CD synchronization, Service A endpoint, and destroy/rebuild flow were
-executed successfully. This is not a production-ready platform.
+**Current implementation progress: KIND BOOTSTRAP RUNTIME VERIFIED ON LOCAL
+KIND.** Fresh creation, destruction, absence confirmation, and rebuild with
+the repository scripts succeeded; the rebuilt control-plane reached `Ready`.
+Evidence is recorded in
+[`bootstrap-result.txt`](evidence/releases/v0.1.0/bootstrap-result.txt) and
+[`rebuild-result.txt`](evidence/releases/v0.1.0/rebuild-result.txt). Argo CD
+and Service A have not yet been runtime verified as part of current progress,
+and the full v0.1.0 release is not yet complete. This is not a
+production-ready platform.
 
 ## Golden Path
 
@@ -72,14 +78,16 @@ points Argo CD to the GitOps repository.
 
 ## Verification and rebuild
 
-The v0.1.0 Runtime Verification completed successfully on local kind:
+The following is the planned v0.1.0 Runtime Verification. Only the kind
+Bootstrap lifecycle is currently runtime verified; Argo CD and Service A are
+not yet runtime verified:
 
-- `make bootstrap` created the cluster, installed Argo CD, and applied the
+- `make bootstrap` creates the cluster, installs Argo CD, and applies the
   Root Application.
-- Root Application and Service A Application reached `Synced` and `Healthy`.
-- Service A reached one available replica with a Ready Pod.
-- `make service-a-check` returned the expected JSON response.
-- `make destroy`, followed by Bootstrap and verification, reproduced the same
+- Root Application and Service A Application reach `Synced` and `Healthy`.
+- Service A reaches one available replica with a Ready Pod.
+- `make service-a-check` returns the expected JSON response.
+- `make destroy`, followed by Bootstrap and verification, reproduces the same
   successful state.
 
 The recorded command results are versioned in
@@ -88,8 +96,8 @@ sequence in [the rebuild runbook](runbooks/platform-rebuild.md).
 
 ## Success criteria
 
-The following v0.1.0 outcomes have been verified in the recorded runtime
-evidence:
+The following are planned v0.1.0 success criteria. Only the kind lifecycle is
+verified in the recorded runtime evidence:
 
 - Bootstrap creates the kind cluster and installs Argo CD successfully.
 - GitOps desired state deploys Service A through Argo CD.
@@ -100,7 +108,7 @@ evidence:
 - Service A is deployed by Argo CD without a direct `kubectl apply` of its
   application manifests.
 - Destroy and rebuild recreate the same healthy state.
-- Runtime Verification is complete and its evidence is recorded in Git.
+- Full Runtime Verification must be completed and its evidence recorded in Git.
 
 ## Known limitations
 

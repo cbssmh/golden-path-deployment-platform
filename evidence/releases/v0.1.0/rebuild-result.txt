@@ -1,15 +1,73 @@
-PASS — 2026-07-16
+Kind Bootstrap runtime verification — 2026-07-16
+
+Destruction and rebuild verification
 
 Commands executed:
-  make destroy
-  make bootstrap
-  make verify
-  make service-a-check
+  ./bootstrap/destroy.sh
+  kind get clusters
+  ./bootstrap/kind/create-cluster.sh
+  kubectl cluster-info
+  kubectl get nodes -o wide
+  kubectl get ns
 
-The rebuilt cluster reached the same state as the first successful run:
-  - Ready kind node
-  - Ready Argo CD Pods
-  - Root Application Synced and Healthy
-  - Service A Application Synced and Healthy
-  - Deployment available with one Ready Pod
-  - HTTP endpoint returned the expected JSON payload
+Output from ./bootstrap/destroy.sh:
+Deleting cluster "golden-path" ...
+Deleted nodes: ["golden-path-control-plane"]
+Deleted kind cluster 'golden-path'.
+
+Output from kind get clusters:
+No kind clusters found.
+
+Output from ./bootstrap/kind/create-cluster.sh:
+No kind clusters found.
+Creating cluster "golden-path" ...
+ • Ensuring node image (kindest/node:v1.36.1) 🖼  ...
+ ✓ Ensuring node image (kindest/node:v1.36.1) 🖼
+ • Preparing nodes 📦   ...
+ ✓ Preparing nodes 📦
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+Set kubectl context to "kind-golden-path"
+You can now use your cluster with:
+
+kubectl cluster-info --context kind-golden-path
+
+Thanks for using kind! 😊
+node/golden-path-control-plane condition met
+Cluster 'golden-path' is ready with context 'kind-golden-path'.
+
+Output from kubectl cluster-info:
+Kubernetes control plane is running at https://127.0.0.1:61374
+CoreDNS is running at https://127.0.0.1:61374/api/v1/namespaces/kube-system/services/kube-dns:dns/proxy
+
+To further debug and diagnose cluster problems, use 'kubectl cluster-info dump'.
+
+Output from kubectl get nodes -o wide:
+NAME                        STATUS   ROLES           AGE   VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE                       KERNEL-VERSION             CONTAINER-RUNTIME
+golden-path-control-plane   Ready    control-plane   26s   v1.36.1   172.20.0.2    <none>        Debian GNU/Linux 13 (trixie)   6.12.76-linuxkit (arm64)   containerd://2.3.1
+
+Output from kubectl get ns:
+NAME                 STATUS   AGE
+default              Active   26s
+kube-node-lease      Active   26s
+kube-public          Active   26s
+kube-system          Active   26s
+local-path-storage   Active   23s
+
+Output from kubectl get ns argocd:
+Error from server (NotFound): namespaces "argocd" not found
+
+Output from kubectl get deployments,statefulsets,daemonsets,jobs,cronjobs -A:
+NAMESPACE            NAME                                     READY   UP-TO-DATE   AVAILABLE   AGE
+kube-system          deployment.apps/coredns                  2/2     2            2           36s
+local-path-storage   deployment.apps/local-path-provisioner   1/1     1            1           35s
+
+NAMESPACE     NAME                        DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE
+kube-system   daemonset.apps/kindnet      1         1         1       1            1           kubernetes.io/os=linux   35s
+kube-system   daemonset.apps/kube-proxy   1         1         1       1            1           kubernetes.io/os=linux   36s
