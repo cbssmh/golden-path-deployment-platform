@@ -1,0 +1,125 @@
+$ git -C ../golden-path-gitops ls-remote --tags origin refs/tags/v0.1.1 refs/tags/v0.1.1\^\{\}
+ebb2c2a0f41c7c78e70f9cbb0a95db2e5730e902	refs/tags/v0.1.1
+dc141b5cfd33f25aa5e44601b7fa0efbcd37dcaf	refs/tags/v0.1.1^{}
+
+$ sed -n 1\,160p config/platform.env.example
+# Copy to config/platform.env.local only to override these committed public defaults.
+CLUSTER_NAME=golden-path
+KIND_NODE_IMAGE=kindest/node@sha256:3489c7674813ba5d8b1a9977baea8a6e553784dab7b84759d1014dbd78f7ebd5
+KIND_NODE_IMAGE_VERSION=v1.36.1
+ARGOCD_VERSION=v3.4.5
+ARGOCD_INSTALL_MANIFEST_URL=https://raw.githubusercontent.com/argoproj/argo-cd/v3.4.5/manifests/install.yaml
+ARGOCD_INSTALL_MANIFEST_SHA256=cdf6758b489d25641c2a1fd835642543aaa64fe530867d0136a83ddf3dafe456
+GITOPS_REPOSITORY_URL=https://github.com/cbssmh/golden-path-gitops.git
+GITOPS_TARGET_REVISION=v0.1.1
+GITOPS_ROOT_PATH=applications/root
+ARGOCD_NAMESPACE=argocd
+GITOPS_LOCAL_PATH=../golden-path-gitops
+SERVICE_A_NAMESPACE=dev
+SERVICE_A_NAME=service-a
+SERVICE_A_PORT=8080
+SERVICE_A_IMAGE_DIGEST=sha256:5972389a2b99f26c89544528e4785655aaa422b54e7f0602b4a7b77a5c640916
+
+$ ./bootstrap/destroy.sh
+Deleting cluster "golden-path" ...
+Deleted nodes: ["golden-path-control-plane"]
+Deleted kind cluster 'golden-path'.
+
+$ kind get clusters
+No kind clusters found.
+
+$ make bootstrap
+PASS: docker found at /usr/local/bin/docker
+PASS: kind found at /opt/homebrew/bin/kind
+PASS: kubectl found at /usr/local/bin/kubectl
+PASS: make found at /usr/bin/make
+PASS: git found at /usr/bin/git
+PASS: curl found at /usr/bin/curl
+PASS: Kustomize is available through kubectl kustomize.
+PASS: Docker daemon is reachable.
+SKIP: optional shellcheck is not installed.
+SKIP: optional yamllint is not installed.
+SKIP: optional kubeconform is not installed.
+No kind clusters found.
+Creating cluster "golden-path" ...
+ • Ensuring node image (kindest/node) 🖼  ...
+ ✓ Ensuring node image (kindest/node) 🖼
+ • Preparing nodes 📦   ...
+ ✓ Preparing nodes 📦 
+ • Writing configuration 📜  ...
+ ✓ Writing configuration 📜
+ • Starting control-plane 🕹️  ...
+ ✓ Starting control-plane 🕹️
+ • Installing CNI 🔌  ...
+ ✓ Installing CNI 🔌
+ • Installing StorageClass 💾  ...
+ ✓ Installing StorageClass 💾
+Set kubectl context to "kind-golden-path"
+node/golden-path-control-plane condition met
+Cluster 'golden-path' is ready with context 'kind-golden-path'.
+/var/folders/_y/ccgr983x2317r9vyb619gwyw0000gn/T/tmp.9xYSYLRs1k: OK
+Argo CD v3.4.5 manifest checksum verified.
+namespace/argocd created
+deployment "argocd-applicationset-controller" successfully rolled out
+deployment "argocd-dex-server" successfully rolled out
+deployment "argocd-notifications-controller" successfully rolled out
+deployment "argocd-redis" successfully rolled out
+deployment "argocd-repo-server" successfully rolled out
+deployment "argocd-server" successfully rolled out
+partitioned roll out complete: 1 new pods have been updated...
+Argo CD v3.4.5 is installed.
+application.argoproj.io/root-applications created
+Root Application is applied.
+node/golden-path-control-plane condition met
+kind control-plane image is pinned at sha256:3489c7674813ba5d8b1a9977baea8a6e553784dab7b84759d1014dbd78f7ebd5.
+deployment.apps/argocd-server condition met
+Argo CD server image is quay.io/argoproj/argocd:v3.4.5.
+Application 'root-applications' is Synced and Healthy.
+Application 'service-a' is Synced and Healthy.
+Application 'root-applications' targets immutable GitOps revision v0.1.1.
+Application 'service-a' targets immutable GitOps revision v0.1.1.
+deployment "service-a" successfully rolled out
+pod/service-a-86d76d48cb-mbv64 condition met
+Service A imageID is ghcr.io/cbssmh/golden-path-service-a@sha256:5972389a2b99f26c89544528e4785655aaa422b54e7f0602b4a7b77a5c640916.
+Service A EndpointSlice has a ready endpoint.
+{"service": "service-a", "version": "0.1.0", "status": "running"}/Users/cbssmh/Documents/Golden Path Deployment Platform/scripts/check-service-a.sh: line 9: 72025 Terminated: 15          kubectl port-forward -n "${SERVICE_A_NAMESPACE}" "service/${SERVICE_A_NAME}" "${SERVICE_A_PORT}:${SERVICE_A_PORT}" > /dev/null 2>&1
+
+$ kind get clusters
+golden-path
+
+$ docker inspect golden-path-control-plane --format Image=\{\{.Config.Image\}\}\ ImageID=\{\{.Image\}\}
+Image=kindest/node@sha256:3489c7674813ba5d8b1a9977baea8a6e553784dab7b84759d1014dbd78f7ebd5 ImageID=sha256:3489c7674813ba5d8b1a9977baea8a6e553784dab7b84759d1014dbd78f7ebd5
+
+$ kubectl get nodes -o wide
+NAME                        STATUS   ROLES           AGE    VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE                       KERNEL-VERSION             CONTAINER-RUNTIME
+golden-path-control-plane   Ready    control-plane   103s   v1.36.1   172.20.0.2    <none>        Debian GNU/Linux 13 (trixie)   6.12.76-linuxkit (arm64)   containerd://2.3.1
+
+$ kubectl get deployment argocd-server -n argocd -o jsonpath=\{.spec.template.spec.containers\[0\].image\}\{"\\n"\}
+quay.io/argoproj/argocd:v3.4.5
+
+$ kubectl get application root-applications -n argocd -o jsonpath=targetRevision=\{.spec.source.targetRevision\}\ resolvedRevision=\{.status.sync.revision\}\ sync=\{.status.sync.status\}\ health=\{.status.health.status\}\{"\\n"\}
+targetRevision=v0.1.1 resolvedRevision=dc141b5cfd33f25aa5e44601b7fa0efbcd37dcaf sync=Synced health=Healthy
+
+$ kubectl get application service-a -n argocd -o jsonpath=targetRevision=\{.spec.source.targetRevision\}\ resolvedRevision=\{.status.sync.revision\}\ sync=\{.status.sync.status\}\ health=\{.status.health.status\}\{"\\n"\}
+targetRevision=v0.1.1 resolvedRevision=dc141b5cfd33f25aa5e44601b7fa0efbcd37dcaf sync=Synced health=Healthy
+
+$ kubectl get deployment service-a -n dev
+NAME        READY   UP-TO-DATE   AVAILABLE   AGE
+service-a   1/1     1            1           20s
+
+$ kubectl get pods -n dev -l app.kubernetes.io/name=service-a -o wide
+NAME                         READY   STATUS    RESTARTS   AGE   IP            NODE                        NOMINATED NODE   READINESS GATES
+service-a-86d76d48cb-mbv64   1/1     Running   0          20s   10.244.0.12   golden-path-control-plane   <none>           <none>
+
+$ kubectl get pods -n dev -l app.kubernetes.io/name=service-a -o jsonpath=\{range\ .items\[\*\]\}\{.metadata.name\}\{"\ imageID="\}\{.status.containerStatuses\[0\].imageID\}\{"\\n"\}\{end\}
+service-a-86d76d48cb-mbv64 imageID=ghcr.io/cbssmh/golden-path-service-a@sha256:5972389a2b99f26c89544528e4785655aaa422b54e7f0602b4a7b77a5c640916
+
+$ kubectl get endpointslice -n dev -l kubernetes.io/service-name=service-a -o wide
+NAME              ADDRESSTYPE   PORTS   ENDPOINTS     AGE
+service-a-8h96z   IPv4          8080    10.244.0.12   20s
+
+$ kubectl get endpointslice -n dev -l kubernetes.io/service-name=service-a -o jsonpath=\{range\ .items\[\*\].endpoints\[\*\]\}ready=\{.conditions.ready\}\ addresses=\{.addresses\}\{"\\n"\}\{end\}
+ready=true addresses=["10.244.0.12"]
+
+$ ./scripts/check-service-a.sh
+{"service": "service-a", "version": "0.1.0", "status": "running"}./scripts/check-service-a.sh: line 9: 72056 Terminated: 15          kubectl port-forward -n "${SERVICE_A_NAMESPACE}" "service/${SERVICE_A_NAME}" "${SERVICE_A_PORT}:${SERVICE_A_PORT}" > /dev/null 2>&1

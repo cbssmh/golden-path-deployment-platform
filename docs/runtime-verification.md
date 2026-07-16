@@ -78,3 +78,32 @@ The rebuilt cluster has a Ready control-plane, healthy Argo CD components,
 `root-applications` and `service-a` both `Synced` and `Healthy`, an Available
 Service A Deployment with a Ready Pod and active endpoint, and the expected
 runtime JSON response. No Service A resource was manually applied.
+
+## v0.1.1 Immutable Release Verification
+
+The v0.1.1 immutable release workflow was runtime-verified on 2026-07-17.
+The first clean bootstrap and second clean rebuild outputs are recorded in
+`evidence/releases/v0.1.1/first-clean-bootstrap.txt` and
+`evidence/releases/v0.1.1/second-clean-rebuild.txt`.
+
+Both runs used the remote annotated GitOps `v0.1.1` tag, which resolved to
+`dc141b5cfd33f25aa5e44601b7fa0efbcd37dcaf`. The Root Application and the
+generated Service A Application both reported `targetRevision: v0.1.1`, the
+same resolved GitOps revision, and `Synced`/`Healthy` status.
+
+The kind control-plane used
+`kindest/node@sha256:3489c7674813ba5d8b1a9977baea8a6e553784dab7b84759d1014dbd78f7ebd5`.
+The bootstrap downloaded Argo CD `v3.4.5` from its versioned manifest URL and
+verified SHA-256
+`cdf6758b489d25641c2a1fd835642543aaa64fe530867d0136a83ddf3dafe456`
+before applying it. The running Service A container imageID was
+`ghcr.io/cbssmh/golden-path-service-a@sha256:5972389a2b99f26c89544528e4785655aaa422b54e7f0602b4a7b77a5c640916`.
+
+For each run, the control-plane was Ready, Argo CD `argocd-server` used
+`quay.io/argoproj/argocd:v3.4.5`, Service A Deployment was Available, its Pod
+was Ready, its EndpointSlice endpoint reported `ready=true`, and the temporary
+port-forward verifier returned:
+
+```json
+{"service": "service-a", "version": "0.1.0", "status": "running"}
+```

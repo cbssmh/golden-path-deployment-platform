@@ -1,0 +1,28 @@
+release:
+  version: v0.1.1
+  platform:
+    repository: https://github.com/cbssmh/golden-path-deployment-platform.git
+    baseline_commit: fd2c4a240a5df8ab4b9950738b1ef31573047c84
+    baseline_tag: v0.1.0
+    intended_tag: v0.1.1
+    final_commit: recorded by the post-verification v0.1.1 hardening commit
+  gitops:
+    repository: https://github.com/cbssmh/golden-path-gitops.git
+    commit: dc141b5cfd33f25aa5e44601b7fa0efbcd37dcaf
+    tag: v0.1.1
+  kind:
+    verified_version_tag: kindest/node:v1.36.1
+    image: kindest/node@sha256:3489c7674813ba5d8b1a9977baea8a6e553784dab7b84759d1014dbd78f7ebd5
+  argocd:
+    version: v3.4.5
+    manifest_url: https://raw.githubusercontent.com/argoproj/argo-cd/v3.4.5/manifests/install.yaml
+    manifest_sha256: cdf6758b489d25641c2a1fd835642543aaa64fe530867d0136a83ddf3dafe456
+  service_a:
+    image: ghcr.io/cbssmh/golden-path-service-a@sha256:5972389a2b99f26c89544528e4785655aaa422b54e7f0602b4a7b77a5c640916
+  applications:
+    root:
+      path: applications/root
+      target_revision: v0.1.1
+    service_a:
+      path: services/service-a/overlays/dev
+      target_revision: v0.1.1

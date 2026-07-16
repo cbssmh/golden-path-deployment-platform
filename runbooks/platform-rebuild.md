@@ -1,7 +1,8 @@
 # Platform rebuild runbook
 
-With `config/platform.env.local` configured for a reachable public GitOps
-repository, run:
+Use the committed v0.1.1 release configuration or a local file that preserves
+its pinned kind image, Argo CD manifest checksum, GitOps `v0.1.1` tag, and
+Service A OCI digest. With the public GitOps repository reachable, run:
 
 ```bash
 ./bootstrap/destroy.sh
@@ -14,5 +15,8 @@ repository, run:
 
 The Root Application is the only application resource applied by Platform; it
 creates the Service A Application through Argo CD. Do not directly apply
-Service A resources. Record command output in `evidence/releases/v0.1.0/`
-without secrets, tokens, or Argo CD administrator passwords.
+Service A resources. Record command output in `evidence/releases/v0.1.1/`
+without secrets, tokens, or Argo CD administrator passwords. For v0.1.1,
+record the kind node image, Argo CD checksum result, both Application
+`targetRevision` values, EndpointSlice readiness, Service A imageID, and HTTP
+response in `evidence/releases/v0.1.1/`.
