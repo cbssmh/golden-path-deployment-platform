@@ -5,7 +5,7 @@ release:
     baseline_commit: fd2c4a240a5df8ab4b9950738b1ef31573047c84
     baseline_tag: v0.1.0
     intended_tag: v0.1.1
-    final_commit: recorded by the post-verification v0.1.1 hardening commit
+    final_commit: 6257054d410b282c2ac6ddc244b14311976f24c0
   gitops:
     repository: https://github.com/cbssmh/golden-path-gitops.git
     commit: dc141b5cfd33f25aa5e44601b7fa0efbcd37dcaf
