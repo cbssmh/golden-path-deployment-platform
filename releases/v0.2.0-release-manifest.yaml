@@ -1,0 +1,48 @@
+release:
+  version: v0.2.0
+  platform:
+    repository: https://github.com/cbssmh/golden-path-deployment-platform.git
+    intended_tag: v0.2.0
+    identity_method: >-
+      Record the exact platform commit after merge as the protected annotated
+      v0.2.0 tag target; do not embed a self-referential commit here.
+  gitops:
+    repository: https://github.com/cbssmh/golden-path-gitops.git
+    tag: v0.2.0
+    commit: cbd5ad7de7d73b93859e019f5d2a34705917c477
+    annotated_tag_object: 193389d6d2271c1c8d7acf9e34f6d10e689c5da3
+  kind:
+    version_tag: kindest/node:v1.36.1
+    image: kindest/node@sha256:3489c7674813ba5d8b1a9977baea8a6e553784dab7b84759d1014dbd78f7ebd5  # yamllint disable-line rule:line-length
+  argocd:
+    version: v3.4.5
+    manifest_url: https://raw.githubusercontent.com/argoproj/argo-cd/v3.4.5/manifests/install.yaml  # yamllint disable-line rule:line-length
+    manifest_sha256: cdf6758b489d25641c2a1fd835642543aaa64fe530867d0136a83ddf3dafe456  # yamllint disable-line rule:line-length
+  service_a:
+    image: ghcr.io/cbssmh/golden-path-service-a@sha256:5972389a2b99f26c89544528e4785655aaa422b54e7f0602b4a7b77a5c640916  # yamllint disable-line rule:line-length
+  trust_boundary:
+    version: GP-2A
+    repository_contract: SOURCE-CONFIRMED
+    static_policy: TEST-VERIFIED
+    argocd_enforcement: NOT RUNTIME-VERIFIED
+    default_project: restricted
+    platform_project: golden-path-platform
+    workload_project:
+      name: golden-path-service-a
+      source_repositories:
+        - https://github.com/cbssmh/golden-path-gitops.git
+      destinations:
+        - server: https://kubernetes.default.svc
+          namespace: dev
+      namespaced_resources:
+        - apps/Deployment
+        - core/Service
+        - core/ConfigMap
+      cluster_resources: []
+  applications:
+    root:
+      path: applications/root
+      target_revision: v0.2.0
+    service_a:
+      path: services/service-a/overlays/dev
+      target_revision: v0.2.0

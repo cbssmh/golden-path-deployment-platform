@@ -2,15 +2,21 @@
 
 Small SaaS teams often have application code but no repeatable path from an
 empty local machine to a declaratively deployed service. This repository
-provides that minimum platform path for v0.1.1: a kind cluster, Argo CD
-bootstrap, and a GitOps-managed example service.
+provides that minimum platform path: a kind cluster, Argo CD bootstrap, and a
+GitOps-managed example service.
 
-**Current implementation progress: v0.1.1 immutable release-input verification
-completed on local kind.** The official workflow pins the kind node image,
+**Runtime baseline: v0.1.1 release-input verification completed on local
+kind.** The verified workflow pins the kind node image,
 Argo CD v3.4.5 manifest and checksum, GitOps `v0.1.1` tag, and Service A OCI
 digest. Fresh creation, destruction, absence confirmation, and rebuild reached
 the same healthy release identities and HTTP response. This is not a
 production-ready platform.
+
+**GP-2A candidate: v0.2.0 platform/workload trust boundary is source- and
+test-confirmed, not runtime-verified.** Dedicated Argo CD AppProjects constrain
+the root and Service A Applications, and the permissive default project is
+restricted. Repository rulesets are active and the protected GitOps `v0.2.0`
+tag exists; the Platform `v0.2.0` tag remains post-merge work.
 
 ## Golden Path
 
@@ -18,7 +24,8 @@ In v0.1.0, the Golden Path is the single deployment procedure officially
 supported by the Platform Team. It is the default route for developers to
 deploy Service A safely and consistently: GitOps desired state is reconciled
 by Argo CD instead of developers directly applying application resources to
-Kubernetes.
+Kubernetes. Automated Git changes are reconciled, but live drift is not
+automatically corrected because `selfHeal` remains disabled.
 
 ## Target users
 
@@ -31,6 +38,7 @@ foundation.
 flowchart LR
   P[Platform repository] -->|bootstrap only| K[kind Kubernetes]
   P -->|installs| A[Argo CD]
+  P -->|applies platform and default projects| A
   G[GitOps repository] -->|desired state| A
   A -->|syncs Service A| K
   E[Example services repository] -->|builds fixed image tag| R[GHCR]
@@ -54,11 +62,12 @@ report explicit skips when absent.
 ## Configuration
 
 Platform values are centralized in
-[`config/platform.env.example`](config/platform.env.example). The official
-v0.1.1 release profile targets the public GitOps `v0.1.1` tag, not `main`.
-Its complete resolved input set is recorded in
+[`config/platform.env.example`](config/platform.env.example). It targets the
+protected GitOps `v0.2.0` release. The exact pre-merge input set is recorded in
+[`v0.2.0-release-manifest.yaml`](releases/v0.2.0-release-manifest.yaml), while
+the historical v0.1.1 input set is recorded in
 [`v0.1.1-release-manifest.yaml`](releases/v0.1.1-release-manifest.yaml). No
-credentials are configured automatically.
+external repository or registry credentials are configured automatically.
 
 ## Quick start
 
@@ -67,6 +76,7 @@ cp config/platform.env.example config/platform.env.local
 make prerequisites
 ./bootstrap/kind/create-cluster.sh
 ./bootstrap/argocd/install.sh
+./bootstrap/argocd/apply-platform-projects.sh
 ./bootstrap/argocd/apply-root-application.sh
 ./scripts/verify-platform.sh
 ../golden-path-gitops/scripts/validate.sh
@@ -76,6 +86,15 @@ The GitOps repository must first be available as the configured public remote.
 Service A is never directly applied by Platform scripts; the Root Application
 points Argo CD to the GitOps repository. Use
 `./bootstrap/destroy.sh` before repeating the full rebuild sequence.
+
+## GP-2A trust boundary
+
+Service A is constrained by a dedicated Argo CD AppProject to the approved
+GitOps repository, the `dev` namespace, and Deployment, Service, and ConfigMap
+desired resources. This statement is currently SOURCE/TEST-CONFIRMED, not
+RUNTIME-VERIFIED. The Argo application-controller remains a cluster-wide,
+high-trust component, and this platform is not described as multi-tenant. See
+[the GP-2A trust-boundary record](docs/gp-2a-trust-boundary.md).
 
 ## Verification and rebuild
 
@@ -116,7 +135,7 @@ evidence:
 
 ## Known limitations
 
-v0.1.1 is a local kind foundation with one public GitOps repository, one dev
+The platform is a local kind foundation with one public GitOps repository, one dev
 Service A deployment, and manual fixed-image updates. Private Git repository
 authentication, automated image updates, cloud infrastructure, monitoring,
 rollback automation, and multi-cluster operation remain out of scope.

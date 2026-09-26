@@ -1,0 +1,16 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: default
+  namespace: __ARGOCD_NAMESPACE__
+  labels:
+    app.kubernetes.io/part-of: golden-path-platform
+spec:
+  description: Deny-all fallback; current Applications use dedicated projects.
+  sourceRepos: []
+  sourceNamespaces: []
+  destinations: []
+  clusterResourceWhitelist: []
+  namespaceResourceBlacklist:
+    - group: "*"
+      kind: "*"
