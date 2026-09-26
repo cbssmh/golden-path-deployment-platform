@@ -1,0 +1,8 @@
+# Ownership documentation for the current single-maintainer repository.
+# Runtime enforcement comes from Argo CD AppProjects. Independent human review
+# does not exist while @cbssmh is the sole maintainer.
+* @cbssmh
+/bootstrap/argocd/ @cbssmh
+/config/ @cbssmh
+/releases/ @cbssmh
+/.github/ @cbssmh

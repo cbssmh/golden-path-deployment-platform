@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: golden-path-platform
+  namespace: __ARGOCD_NAMESPACE__
+  labels:
+    app.kubernetes.io/name: golden-path-platform
+    app.kubernetes.io/part-of: golden-path-platform
+spec:
+  description: Narrow permissions for the root App-of-Apps Application.
+  sourceRepos:
+    - __GITOPS_REPOSITORY_URL__
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: __ARGOCD_NAMESPACE__
+  namespaceResourceWhitelist:
+    - group: argoproj.io
+      kind: Application
+    - group: argoproj.io
+      kind: AppProject
+  clusterResourceWhitelist:
+    - group: ""
+      kind: Namespace
+      name: dev

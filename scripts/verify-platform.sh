@@ -22,6 +22,16 @@ if [[ "${argocd_server_image}" != "quay.io/argoproj/argocd:${ARGOCD_VERSION}" ]]
 fi
 echo "Argo CD server image is ${argocd_server_image}."
 kubectl get application root-applications -n "${ARGOCD_NAMESPACE}" >/dev/null
+kubectl get appproject golden-path-platform -n "${ARGOCD_NAMESPACE}" >/dev/null
+kubectl get appproject golden-path-service-a -n "${ARGOCD_NAMESPACE}" >/dev/null
+
+default_sources="$(kubectl get appproject default -n "${ARGOCD_NAMESPACE}" -o jsonpath='{.spec.sourceRepos}')"
+default_destinations="$(kubectl get appproject default -n "${ARGOCD_NAMESPACE}" -o jsonpath='{.spec.destinations}')"
+if [[ "${default_sources}" != "[]" || "${default_destinations}" != "[]" ]]; then
+  echo "Default AppProject still has source or destination authority." >&2
+  exit 1
+fi
+echo "Default AppProject has no source or destination authority."
 
 wait_for_application() {
   local name="$1"
@@ -40,6 +50,18 @@ wait_for_application() {
 
 wait_for_application root-applications
 wait_for_application service-a
+root_project="$(kubectl get application root-applications -n "${ARGOCD_NAMESPACE}" -o jsonpath='{.spec.project}')"
+service_project="$(kubectl get application service-a -n "${ARGOCD_NAMESPACE}" -o jsonpath='{.spec.project}')"
+if [[ "${root_project}" != "golden-path-platform" ]]; then
+  echo "Root Application uses unexpected project: ${root_project}" >&2
+  exit 1
+fi
+if [[ "${service_project}" != "golden-path-service-a" ]]; then
+  echo "Service A Application uses unexpected project: ${service_project}" >&2
+  exit 1
+fi
+echo "Applications use dedicated platform and workload projects."
+kubectl get namespace "${SERVICE_A_NAMESPACE}" >/dev/null
 for application in root-applications service-a; do
   revision="$(kubectl get application "${application}" -n "${ARGOCD_NAMESPACE}" -o jsonpath='{.spec.source.targetRevision}')"
   if [[ "${revision}" != "${GITOPS_TARGET_REVISION}" ]]; then

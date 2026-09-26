@@ -5,8 +5,9 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=/dev/null
 source "${ROOT_DIR}/scripts/load-config.sh"
 
-[[ "${GITOPS_TARGET_REVISION}" == "v0.1.1" ]]
+[[ "${GITOPS_TARGET_REVISION}" == "v0.2.0" ]]
 [[ "${SERVICE_A_IMAGE_DIGEST}" == sha256:* ]]
+ruby "${ROOT_DIR}/tests/static/test-trust-boundary.rb"
 grep -F '__GITOPS_REPOSITORY_URL__' "${ROOT_DIR}/bootstrap/argocd/root-application.yaml" >/dev/null
 if [[ -d "${ROOT_DIR}/${GITOPS_LOCAL_PATH}" ]]; then
   kubectl kustomize "${ROOT_DIR}/${GITOPS_LOCAL_PATH}/applications/root" >/dev/null
