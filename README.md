@@ -16,12 +16,16 @@ production-ready platform.
 AppProjects constrain the root and Service A Applications, and the permissive
 default project is restricted.
 
-**GP-3 v0.3.0 is at the Platform release-candidate review gate.** GitOps
-`v0.3.0` is finalized, and the Platform release candidate records that exact
-identity without embedding its own future merge commit. The workload security
-baseline, platform-owned tokenless ServiceAccount, Restricted Pod Security
-Admission labels, and static security contract are `SOURCE-CONFIRMED` and
-`TEST-VERIFIED`. They are `NOT RUNTIME-VERIFIED`.
+**GP-3 v0.3.0 is released and runtime-verified.** The workload security
+baseline, platform-owned tokenless ServiceAccount, and Restricted Pod Security
+Admission enforcement were observed in a disposable runtime.
+
+**GP-4 v0.4.0 is at the Platform release-candidate review gate.** GitOps
+`v0.4.0` is finalized, and the Platform release candidate records that exact
+identity without embedding its own future merge commit. The platform-owned
+ResourceQuota, LimitRange, dedicated governance AppProject/Application, and
+static resource contract are `SOURCE-CONFIRMED` and `TEST-VERIFIED`. They are
+`NOT RUNTIME-VERIFIED`.
 
 ## Golden Path
 
@@ -68,9 +72,11 @@ report explicit skips when absent.
 
 Platform values are centralized in
 [`config/platform.env.example`](config/platform.env.example). It targets the
-finalized GitOps `v0.3.0` release for the Platform GP-3 release candidate. The
+finalized GitOps `v0.4.0` release for the Platform GP-4 release candidate. The
 candidate input set is recorded in
-[`v0.3.0-release-manifest.yaml`](releases/v0.3.0-release-manifest.yaml). The
+[`v0.4.0-release-manifest.yaml`](releases/v0.4.0-release-manifest.yaml). The
+released v0.3.0 input set is recorded in
+[`v0.3.0-release-manifest.yaml`](releases/v0.3.0-release-manifest.yaml), the
 released v0.2.0 input set is recorded in
 [`v0.2.0-release-manifest.yaml`](releases/v0.2.0-release-manifest.yaml), while
 the historical v0.1.1 input set is recorded in
@@ -109,9 +115,19 @@ high-trust component, and this platform is not described as multi-tenant. See
 GP-3 adds a hardened Service A Pod specification, a platform-owned tokenless
 ServiceAccount, and Kubernetes v1.36 Restricted Pod Security Admission on
 Namespace `dev`. Static contract tests cover the allowed manifest and nine
-forbidden mutations. This state is `SOURCE-CONFIRMED` and `TEST-VERIFIED`, but
-`NOT RUNTIME-VERIFIED`. See
+forbidden mutations. This state is `SOURCE-CONFIRMED`, `TEST-VERIFIED`, and
+`RUNTIME-VERIFIED`. See
 [the GP-3 workload-security record](docs/gp-3-workload-security.md).
+
+## GP-4 resource governance boundary
+
+GP-4 adds a platform-owned ResourceQuota and LimitRange to Namespace `dev`,
+managed by a dedicated AppProject/Application that can reconcile only those
+two kinds. Static contract tests verify the exact namespace budget, per-
+container maxima, workload fit, rolling-update surge fit, and eight forbidden
+mutations. This state is `SOURCE-CONFIRMED` and `TEST-VERIFIED`, but
+`NOT RUNTIME-VERIFIED`. The exact contract is recorded in the
+[`v0.4.0` release manifest](releases/v0.4.0-release-manifest.yaml).
 
 ## Verification and rebuild
 
