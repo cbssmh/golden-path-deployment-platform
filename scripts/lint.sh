@@ -14,12 +14,15 @@ else
   echo "SKIP: shellcheck is not installed."
 fi
 if command -v yamllint >/dev/null 2>&1; then
-  yamllint .
+  find . \
+    \( -path './.git' -o -path './ci/node_modules' \) -prune -o \
+    -type f \( -name '*.yaml' -o -name '*.yml' \) -print0 |
+    xargs -0 yamllint
 else
   echo "SKIP: yamllint is not installed."
 fi
 if command -v markdownlint >/dev/null 2>&1; then
-  markdownlint '**/*.md'
+  markdownlint --ignore 'ci/node_modules/**' '**/*.md'
 else
   echo "SKIP: markdownlint is not installed."
 fi
