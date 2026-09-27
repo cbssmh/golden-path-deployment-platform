@@ -61,7 +61,7 @@ assert(default_spec.fetch("namespaceResourceBlacklist") == [{"group" => "*", "ki
 root_application = rendered_document(File.join(ROOT, "bootstrap/argocd/root-application.yaml"), substitutions)
 assert(root_application.dig("spec", "project") == "golden-path-platform", "root Application must use golden-path-platform")
 assert(root_application.dig("spec", "source", "repoURL") == config.fetch("GITOPS_REPOSITORY_URL"), "root source repository changed")
-assert(root_application.dig("spec", "source", "targetRevision") == "v0.3.0", "root must target v0.3.0")
+assert(root_application.dig("spec", "source", "targetRevision") == "v0.4.0", "root must target v0.4.0")
 assert(root_application.dig("spec", "destination") == {"server" => "https://kubernetes.default.svc", "namespace" => "argocd"}, "root destination changed")
 assert(root_application.dig("spec", "syncPolicy", "automated") == {"prune" => true, "selfHeal" => false}, "root prune/selfHeal policy changed")
 assert(!root_application.dig("spec", "syncPolicy").key?("syncOptions"), "root must not use CreateNamespace")

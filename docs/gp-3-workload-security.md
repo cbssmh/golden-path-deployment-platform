@@ -2,15 +2,14 @@
 
 ## Evidence state
 
-GP-3 is at the Platform release-candidate review gate. GitOps `v0.3.0` is
-finalized at commit `7ca762c380cecc47af922344abe268c84bb398e4`, with
-annotated tag object `232b0a8b8959c8447f5d0e809f40d350148fe198`.
-The Platform candidate is intended for `v0.3.0` and deliberately does not
-embed its own future merge commit. Repository manifests and the
+GP-3 is released as Platform and GitOps `v0.3.0`. GitOps resolves to commit
+`7ca762c380cecc47af922344abe268c84bb398e4`, with annotated tag object
+`232b0a8b8959c8447f5d0e809f40d350148fe198`. Repository manifests and the
 workload-security contract are `SOURCE-CONFIRMED` and `TEST-VERIFIED / STATIC`.
-No GP-3 manifest has been applied to Kubernetes, so Pod Security Admission,
-effective process identity, seccomp, and ServiceAccount token behavior remain
-`NOT RUNTIME-VERIFIED`.
+A separately approved disposable runtime verified Restricted Pod Security
+Admission, the effective Pod and container security context, UID `10001`,
+ServiceAccount token absence, workload readiness, and the expected admission
+rejections. GP-3 is therefore also `RUNTIME-VERIFIED`.
 
 GP-2A and GP-3 establish different boundaries:
 
@@ -85,14 +84,16 @@ ServiceAccount. Negative mutation fixtures independently prove detection of:
 - missing resource requirements; and
 - a mutable image tag.
 
-These results are `TEST-VERIFIED / STATIC`. They do not demonstrate API-server
-admission or runtime behavior.
+These test results are `TEST-VERIFIED / STATIC`; they do not by themselves
+demonstrate API-server admission or runtime behavior. The separate disposable
+runtime exercise supplies the `RUNTIME-VERIFIED` evidence stated above.
 
 ## Deferred controls and residual risks
 
 GP-3 does not add ValidatingAdmissionPolicy, Kyverno, Gatekeeper,
-ResourceQuota, LimitRange, NetworkPolicy, image signatures, or attestations.
-The Argo CD application-controller remains a high-trust cluster component.
+NetworkPolicy, image signatures, or attestations. ResourceQuota and LimitRange
+are introduced separately by GP-4 and are not part of the GP-3 boundary. The
+Argo CD application-controller remains a high-trust cluster component.
 
 PSA covers the standardized Pod Security profile, but it does not enforce the
 Golden Path requirements for probes, resources, digest-only images, the exact
