@@ -23,7 +23,7 @@ features, and production-readiness claims.
 - **Image automation:** Image updates remain fixed and manually committed after
   validation in this version.
 - **GitOps PR automation:** Automatically creating GitOps pull requests is
-  outside the fixed-tag workflow.
+  outside the manually reviewed digest-update workflow.
 - **Trivy:** Image security scanning is not required to demonstrate
   reproducible local GitOps deployment.
 - **Drift self-healing:** Automated drift correction is beyond this initial

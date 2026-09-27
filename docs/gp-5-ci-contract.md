@@ -23,7 +23,7 @@ with the release manifest. The required GitHub check remains
 
 ## Release identity evidence
 
-The Platform v0.5.0 release candidate records the finalized GitOps v0.5.0
+The Platform `v0.5.0` release records the finalized GitOps `v0.5.0`
 annotated tag object and peeled commit in
 `releases/v0.5.0-release-manifest.yaml`. The release-identity test verifies the
 structured metadata and `scripts/verify-gitops-release.sh` resolves the public
@@ -50,7 +50,8 @@ prevents known-invalid repository changes from reaching those runtime systems.
 ## Residual risks
 
 Repository administrators can change workflows, tests, and rulesets. The
-current single-maintainer model provides no independent reviewer. Static tests
-can diverge from future Kubernetes behavior, third-party CI dependencies are
-not yet pinned to immutable commits, and Service A repository governance is a
-separate approval decision.
+current single-maintainer model provides no independent reviewer, and static
+tests can diverge from future Kubernetes behavior. SC-1 subsequently pinned
+external Actions and CI tools, digest-pinned the Service base image, separated
+publish permission, and activated Service repository governance. Pinned
+dependencies and GitHub-hosted runners remain third-party trust inputs.

@@ -90,12 +90,13 @@ runtime exercise supplies the `RUNTIME-VERIFIED` evidence stated above.
 
 ## Deferred controls and residual risks
 
-GP-3 does not add ValidatingAdmissionPolicy, Kyverno, Gatekeeper,
+GP-3 itself did not add ValidatingAdmissionPolicy, Kyverno, Gatekeeper,
 NetworkPolicy, image signatures, or attestations. ResourceQuota and LimitRange
-are introduced separately by GP-4 and are not part of the GP-3 boundary. The
+were introduced separately by GP-4 and are not part of the GP-3 boundary. The
 Argo CD application-controller remains a high-trust cluster component.
 
 PSA covers the standardized Pod Security profile, but it does not enforce the
 Golden Path requirements for probes, resources, digest-only images, the exact
-ServiceAccount, token automount, or a read-only root filesystem. Those controls
-are static CI requirements until a later built-in admission-policy phase.
+ServiceAccount, token automount, or a read-only root filesystem. GP-6 now
+defines those Deployment-specific checks in a VAP. Its released binding is
+Warn/Audit, so CI remains the fail-closed repository gate for those fields.

@@ -29,11 +29,11 @@ separate, while GitOps and Platform expose fail-closed CI entrypoints. SC-1
 pins the approved CI supply-chain inputs and establishes Service repository
 governance.
 
-**GP-6 v0.6.0 is at the Platform release-candidate review gate.** The
-candidate pins the finalized GitOps v0.6.0 annotated-tag identity and records
-the narrow ValidatingAdmissionPolicy contract in Warn/Audit mode. GP-6 is
-SOURCE-CONFIRMED and TEST-VERIFIED, but NOT RUNTIME-VERIFIED; Deny is not
-enabled.
+**GP-6 is released in Warn/Audit mode.** Platform `v0.6.0` records the original
+GitOps `v0.6.0` identity. The corrected CEL and admission Application target
+are released as GitOps `v0.6.1`. Kubernetes `v1.36.1` type checking was clean,
+Warn/Audit behavior was runtime-observed, and a temporary Deny/Audit exercise
+rejected all nine invalid fixtures. Deny is not the released state.
 
 ## Golden Path
 
@@ -53,14 +53,22 @@ foundation.
 
 ```mermaid
 flowchart LR
-  P[Platform repository] -->|bootstrap only| K[kind Kubernetes]
-  P -->|installs| A[Argo CD]
-  P -->|applies platform and default projects| A
-  G[GitOps repository] -->|desired state| A
-  A -->|syncs Service A| K
-  E[Example services repository] -->|builds fixed image tag| R[GHCR]
-  R --> K
+  D[Developer PR] --> C[Required CI]
+  C --> R[Protected repositories]
+  R --> B[Service build and scoped publish]
+  B --> H[GHCR]
+  H --> I[Digest-pinned GitOps image]
+  R --> G[Protected GitOps release]
+  I --> G
+  G --> A[Argo CD and AppProjects]
+  A --> V[VAP]
+  V --> P[Restricted PSA]
+  P --> Q[ResourceQuota and LimitRange]
+  Q --> S[Running Service A]
 ```
+
+See the [current architecture](docs/architecture.md) for the platform/workload
+ownership graph and enforcement boundaries.
 
 ## Repository responsibilities
 
@@ -69,6 +77,25 @@ flowchart LR
 | `golden-path-deployment-platform` | Bootstrap, verification, documentation |
 | `golden-path-gitops` | Kubernetes desired state and Kustomize overlays |
 | `golden-path-example-services` | Service A code, image build, and CI |
+
+## Verified Platform Controls
+
+<!-- markdownlint-disable MD013 -->
+
+| Category | Current bounded control | Evidence state |
+| --- | --- | --- |
+| GitOps trust boundary | Exact AppProject repositories, destinations, and kinds | Runtime verified |
+| Workload security | Restricted PSA, hardened Pod, tokenless identity | Runtime verified |
+| Resource governance | ResourceQuota and LimitRange in `dev` | Runtime verified |
+| CI enforcement | Fail-closed GitOps and Platform entrypoints | Test verified, released |
+| Supply-chain hardening | SHA-pinned Actions, verified tools, digest-pinned base | Test verified, released |
+| Admission policy | Deployment contract in released Warn/Audit mode | Warn/Audit runtime verified; temporary Deny observed |
+
+<!-- markdownlint-enable MD013 -->
+
+The evidence and its limits are consolidated in
+[security evidence](docs/security-evidence.md). Threats and residual risks are
+tracked in the [security threat model](docs/security-threat-model.md).
 
 ## Prerequisites
 
@@ -79,9 +106,12 @@ report explicit skips when absent.
 ## Configuration
 
 Platform values are centralized in
-[`config/platform.env.example`](config/platform.env.example). It targets the
-finalized GitOps `v0.6.0` release for the Platform GP-6 release candidate. The
-candidate input set is recorded in
+[`config/platform.env.example`](config/platform.env.example). Platform
+`v0.6.0` targets the finalized GitOps `v0.6.0` release recorded in its
+historical release manifest. The corrected admission policy is released
+separately as GitOps `v0.6.1`; consuming that identity from a future Platform
+release requires a governed Platform metadata/configuration change. The
+Platform `v0.6.0` input set is recorded in
 [`v0.6.0-release-manifest.yaml`](releases/v0.6.0-release-manifest.yaml). The
 released v0.5.0 input set is recorded in
 [`v0.5.0-release-manifest.yaml`](releases/v0.5.0-release-manifest.yaml), the
@@ -147,7 +177,7 @@ GitOps keeps `scripts/validate.sh` as its required-check entrypoint. Platform
 uses `make ci` to run linting, trust and release contracts, and read-only
 remote GitOps tag verification. The check names remain `validate` and
 `static-validation`; GitHub governance is unchanged. See
-[the GP-5 CI contract](docs/gp-5-ci-contract.md). The exact release candidate
+[the GP-5 CI contract](docs/gp-5-ci-contract.md). The exact released
 identity and GP-5 evidence classification are recorded in the
 [`v0.5.0` release manifest](releases/v0.5.0-release-manifest.yaml).
 
@@ -155,11 +185,13 @@ identity and GP-5 evidence classification are recorded in the
 
 GitOps defines a platform-owned ValidatingAdmissionPolicy and binding for the
 `dev` namespace. The initial binding uses Warn and Audit only; Deny is not
-enabled. Platform records the finalized GitOps identity and the static GP-6
-evidence without claiming Kubernetes admission behavior. GP-6 is
-`SOURCE-CONFIRMED`, `TEST-VERIFIED`, and `NOT RUNTIME-VERIFIED`. The exact
-release-candidate identity is recorded in the
-[`v0.6.0` release manifest](releases/v0.6.0-release-manifest.yaml).
+enabled in the released manifests. The corrected CEL type-checks cleanly on
+Kubernetes `v1.36.1`; Warn/Audit behavior is `RUNTIME-VERIFIED`. A temporary
+runtime-only Deny/Audit switch rejected nine invalid fixtures and was restored,
+so it is a `TEMPORARY RUNTIME OBSERVATION`, not released enforcement.
+
+Platform `v0.6.0` remains an immutable historical input record for GitOps
+`v0.6.0`. The corrected GitOps policy is released as `v0.6.1`.
 
 ## Verification and rebuild
 
@@ -200,8 +232,8 @@ evidence:
 
 ## Known limitations
 
-The platform is a local kind foundation with one public GitOps repository, one dev
-Service A deployment, and manual fixed-image updates. Private Git repository
+The platform is a local kind foundation with one public GitOps repository, one
+dev Service A deployment, and manual digest updates. Private Git repository
 authentication, automated image updates, cloud infrastructure, monitoring,
 rollback automation, and multi-cluster operation remain out of scope.
 
