@@ -5,7 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=/dev/null
 source "${ROOT_DIR}/scripts/load-config.sh"
 
-[[ "${GITOPS_TARGET_REVISION}" == "v0.4.0" ]]
+[[ "${GITOPS_TARGET_REVISION}" == "v0.5.0" ]]
 [[ "${SERVICE_A_IMAGE_DIGEST}" == sha256:* ]]
 ruby "${ROOT_DIR}/tests/static/test-trust-boundary.rb"
 ruby "${ROOT_DIR}/tests/static/test-release-identity.rb"

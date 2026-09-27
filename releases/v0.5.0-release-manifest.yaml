@@ -1,0 +1,123 @@
+release:
+  version: v0.5.0
+  platform:
+    repository: https://github.com/cbssmh/golden-path-deployment-platform.git
+    intended_tag: v0.5.0
+    identity_method: >-
+      Record the exact platform commit after governed merge as the protected
+      annotated v0.5.0 tag target; do not embed a self-referential commit here.
+  gitops:
+    repository: https://github.com/cbssmh/golden-path-gitops.git
+    tag: v0.5.0
+    commit: 16f648ab945fa6efdf5b291ac2ef54161e70e136
+    annotated_tag_object: 09d0351f5cb2f0ef89279156af906628903e90d5
+  kind:
+    version_tag: kindest/node:v1.36.1
+    image: kindest/node@sha256:3489c7674813ba5d8b1a9977baea8a6e553784dab7b84759d1014dbd78f7ebd5  # yamllint disable-line rule:line-length
+  argocd:
+    version: v3.4.5
+    manifest_url: https://raw.githubusercontent.com/argoproj/argo-cd/v3.4.5/manifests/install.yaml  # yamllint disable-line rule:line-length
+    manifest_sha256: cdf6758b489d25641c2a1fd835642543aaa64fe530867d0136a83ddf3dafe456  # yamllint disable-line rule:line-length
+  service_a:
+    image: ghcr.io/cbssmh/golden-path-service-a@sha256:5972389a2b99f26c89544528e4785655aaa422b54e7f0602b4a7b77a5c640916  # yamllint disable-line rule:line-length
+  trust_boundary:
+    version: GP-2A
+    repository_contract: SOURCE-CONFIRMED
+    static_policy: TEST-VERIFIED
+    argocd_enforcement: RUNTIME-VERIFIED
+    default_project: restricted
+    platform_project: golden-path-platform
+    workload_project:
+      name: golden-path-service-a
+      namespaced_resources:
+        - apps/Deployment
+        - core/Service
+        - core/ConfigMap
+      cluster_resources: []
+  workload_security:
+    version: GP-3
+    repository_contract: SOURCE-CONFIRMED
+    static_policy: TEST-VERIFIED
+    runtime_enforcement: RUNTIME-VERIFIED
+    pod_security_context:
+      run_as_non_root: true
+      run_as_user: 10001
+      seccomp_profile: RuntimeDefault
+    service_account:
+      name: service-a
+      namespace: dev
+      automount_service_account_token: false
+      ownership: platform
+      rbac_bindings: []
+    pod_security_admission:
+      namespace: dev
+      level: restricted
+      version: v1.36
+      modes:
+        - enforce
+        - audit
+        - warn
+      runtime_enforcement: RUNTIME-VERIFIED
+    identity_project:
+      name: golden-path-service-a-identity
+      namespaced_resources:
+        - core/ServiceAccount
+      cluster_resources: []
+  resource_governance:
+    version: GP-4
+    repository_contract: SOURCE-CONFIRMED
+    static_policy: TEST-VERIFIED
+    runtime_enforcement: RUNTIME-VERIFIED
+    namespace: dev
+    governance_project:
+      name: golden-path-dev-governance
+      namespaced_resources:
+        - core/ResourceQuota
+        - core/LimitRange
+      cluster_resources: []
+    resource_quota:
+      name: dev-resource-budget
+      hard:
+        requests.cpu: 250m
+        requests.memory: 256Mi
+        limits.cpu: 500m
+        limits.memory: 512Mi
+        pods: "6"
+        services: "5"
+        configmaps: "10"
+    limit_range:
+      name: dev-container-boundary
+      type: Container
+      maximum:
+        cpu: 250m
+        memory: 256Mi
+      defaults: none
+  ci_contract:
+    version: GP-5
+    repository_contract: SOURCE-CONFIRMED
+    static_policy: TEST-VERIFIED
+    gitops_entrypoint: scripts/validate.sh
+    platform_entrypoint: make ci
+    required_checks:
+      gitops: validate
+      platform: static-validation
+    remote_gitops_identity:
+      verification: TEST-VERIFIED
+      method: annotated-tag-object-and-peeled-commit
+      repository: https://github.com/cbssmh/golden-path-gitops.git
+      tag: v0.5.0
+      annotated_tag_object: 09d0351f5cb2f0ef89279156af906628903e90d5
+      peeled_commit: 16f648ab945fa6efdf5b291ac2ef54161e70e136
+  applications:
+    root:
+      path: applications/root
+      target_revision: v0.5.0
+    service_a:
+      path: services/service-a/overlays/dev
+      target_revision: v0.4.0
+    service_a_identity:
+      path: platform/service-accounts/service-a
+      target_revision: v0.4.0
+    dev_resource_governance:
+      path: platform/resource-governance/dev
+      target_revision: v0.4.0
