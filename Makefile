@@ -37,6 +37,7 @@ verify-gitops-release:
 
 ci:
 	@./tests/static/test-makefile.sh
+	@ruby tests/static/test-supply-chain-pins.rb
 	@$(MAKE) lint
 	@$(MAKE) validate
 	@$(MAKE) verify-gitops-release

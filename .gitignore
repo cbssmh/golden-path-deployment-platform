@@ -10,6 +10,7 @@ __pycache__/
 *.tmp
 *.log
 *.tar
+ci/node_modules/
 config/platform.env.local
 evidence/releases/v0.1.0/*.local
 evidence/releases/v0.1.0/*.tmp

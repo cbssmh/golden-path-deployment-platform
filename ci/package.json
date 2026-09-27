@@ -1,0 +1,7 @@
+{
+  "name": "golden-path-platform-ci",
+  "private": true,
+  "devDependencies": {
+    "markdownlint-cli": "0.49.1"
+  }
+}
