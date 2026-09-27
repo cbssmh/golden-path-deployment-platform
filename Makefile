@@ -1,9 +1,9 @@
 .DEFAULT_GOAL := help
 
-.PHONY: help prerequisites cluster-create argocd-install argocd-projects bootstrap verify service-a-check lint validate destroy
+.PHONY: help prerequisites cluster-create argocd-install argocd-projects bootstrap verify service-a-check lint validate verify-gitops-release ci destroy
 
 help:
-	@echo "Targets: prerequisites cluster-create argocd-install argocd-projects bootstrap verify service-a-check lint validate destroy"
+	@echo "Targets: prerequisites cluster-create argocd-install argocd-projects bootstrap verify service-a-check lint validate verify-gitops-release ci destroy"
 
 prerequisites:
 	@./scripts/check-prerequisites.sh
@@ -31,6 +31,15 @@ lint:
 
 validate:
 	@./scripts/validate.sh
+
+verify-gitops-release:
+	@./scripts/verify-gitops-release.sh
+
+ci:
+	@./tests/static/test-makefile.sh
+	@$(MAKE) lint
+	@$(MAKE) validate
+	@$(MAKE) verify-gitops-release
 
 destroy:
 	@./bootstrap/destroy.sh

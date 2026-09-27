@@ -22,11 +22,5 @@ jobs:
         run: |
           pip install yamllint
           npm install --global markdownlint-cli
-      - name: Verify Makefile targets
-        run: ./tests/static/test-makefile.sh
-      - name: Lint
-        run: make lint
-      - name: Validate platform artifacts
-        run: make validate
-      - name: Check whitespace
-        run: git diff --check
+      - name: Run CI contract
+        run: make ci
