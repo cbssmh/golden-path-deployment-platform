@@ -2,11 +2,11 @@
 
 ## Evidence state
 
-GP-2A repository manifests and deterministic policy tests are
-SOURCE/TEST-CONFIRMED. Runtime verification is approval-gated and has not been
-performed. GitHub rulesets are active in both repositories, and the protected
-GitOps `v0.2.0` tag resolves to the exact commit recorded in the release
-manifest. The Platform `v0.2.0` tag is intentionally deferred until merge.
+GP-2A repository manifests are `SOURCE-CONFIRMED`, deterministic policy tests
+are `TEST-VERIFIED`, and the Argo CD AppProject allow/deny boundary is
+`RUNTIME-VERIFIED`. Platform and GitOps `v0.2.0` remain protected historical
+releases. Later phases added distinct Pod security, resource, CI, supply-chain,
+and admission controls without broadening the workload AppProject.
 
 The bounded intended claim is:
 
@@ -16,6 +16,11 @@ The bounded intended claim is:
 
 This is not a multi-tenant claim and does not make the Argo CD controller
 least-privileged.
+
+Runtime evidence showed the allowed Service A Application Synced and Healthy,
+with Deployment, Service, and ConfigMap resources present. Alternate
+repository, forbidden destination, cluster-resource, Namespace, Secret, and
+ServiceAccount fixtures were rejected and their resources were absent.
 
 ## Enforcement and ownership
 
@@ -66,6 +71,8 @@ For `refs/tags/v*` in both repositories:
 - AppProjects restrict repositories, not repository subpaths.
 - A solo maintainer has no independent reviewer.
 - Direct cluster-admin mutation remains possible.
-- Pod security, resource quotas, and network isolation are later phases.
+- Pod security and resource governance are separate runtime-verified phases;
+  they do not reduce the Argo controller's authority.
+- No NetworkPolicy is present.
 - `selfHeal` remains disabled, so live drift is detected but not automatically
   corrected.
