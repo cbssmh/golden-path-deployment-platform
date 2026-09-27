@@ -12,11 +12,16 @@ digest. Fresh creation, destruction, absence confirmation, and rebuild reached
 the same healthy release identities and HTTP response. This is not a
 production-ready platform.
 
-**GP-2A candidate: v0.2.0 platform/workload trust boundary is source- and
-test-confirmed, not runtime-verified.** Dedicated Argo CD AppProjects constrain
-the root and Service A Applications, and the permissive default project is
-restricted. Repository rulesets are active and the protected GitOps `v0.2.0`
-tag exists; the Platform `v0.2.0` tag remains post-merge work.
+**GP-2A v0.2.0 is released and runtime-verified.** Dedicated Argo CD
+AppProjects constrain the root and Service A Applications, and the permissive
+default project is restricted.
+
+**GP-3 v0.3.0 is at the Platform release-candidate review gate.** GitOps
+`v0.3.0` is finalized, and the Platform release candidate records that exact
+identity without embedding its own future merge commit. The workload security
+baseline, platform-owned tokenless ServiceAccount, Restricted Pod Security
+Admission labels, and static security contract are `SOURCE-CONFIRMED` and
+`TEST-VERIFIED`. They are `NOT RUNTIME-VERIFIED`.
 
 ## Golden Path
 
@@ -63,7 +68,10 @@ report explicit skips when absent.
 
 Platform values are centralized in
 [`config/platform.env.example`](config/platform.env.example). It targets the
-protected GitOps `v0.2.0` release. The exact pre-merge input set is recorded in
+finalized GitOps `v0.3.0` release for the Platform GP-3 release candidate. The
+candidate input set is recorded in
+[`v0.3.0-release-manifest.yaml`](releases/v0.3.0-release-manifest.yaml). The
+released v0.2.0 input set is recorded in
 [`v0.2.0-release-manifest.yaml`](releases/v0.2.0-release-manifest.yaml), while
 the historical v0.1.1 input set is recorded in
 [`v0.1.1-release-manifest.yaml`](releases/v0.1.1-release-manifest.yaml). No
@@ -91,10 +99,19 @@ points Argo CD to the GitOps repository. Use
 
 Service A is constrained by a dedicated Argo CD AppProject to the approved
 GitOps repository, the `dev` namespace, and Deployment, Service, and ConfigMap
-desired resources. This statement is currently SOURCE/TEST-CONFIRMED, not
+desired resources. This boundary is SOURCE-CONFIRMED, TEST-VERIFIED, and
 RUNTIME-VERIFIED. The Argo application-controller remains a cluster-wide,
 high-trust component, and this platform is not described as multi-tenant. See
 [the GP-2A trust-boundary record](docs/gp-2a-trust-boundary.md).
+
+## GP-3 workload security boundary
+
+GP-3 adds a hardened Service A Pod specification, a platform-owned tokenless
+ServiceAccount, and Kubernetes v1.36 Restricted Pod Security Admission on
+Namespace `dev`. Static contract tests cover the allowed manifest and nine
+forbidden mutations. This state is `SOURCE-CONFIRMED` and `TEST-VERIFIED`, but
+`NOT RUNTIME-VERIFIED`. See
+[the GP-3 workload-security record](docs/gp-3-workload-security.md).
 
 ## Verification and rebuild
 
