@@ -24,11 +24,16 @@ Admission enforcement were observed in a disposable runtime.
 positive workload admission, isolated quota denials, and replica behavior were
 observed in a disposable runtime.
 
-**GP-5 v0.5.0 is at the Platform release-candidate review gate.** Existing
-semantic contracts remain separate, while GitOps and Platform expose
-fail-closed CI entrypoints. The candidate pins the finalized GitOps v0.5.0
-annotated-tag identity. CI evidence is static and does not replace Kubernetes
-runtime verification.
+**GP-5 v0.5.0 and SC-1 are released.** Existing semantic contracts remain
+separate, while GitOps and Platform expose fail-closed CI entrypoints. SC-1
+pins the approved CI supply-chain inputs and establishes Service repository
+governance.
+
+**GP-6 v0.6.0 is at the Platform release-candidate review gate.** The
+candidate pins the finalized GitOps v0.6.0 annotated-tag identity and records
+the narrow ValidatingAdmissionPolicy contract in Warn/Audit mode. GP-6 is
+SOURCE-CONFIRMED and TEST-VERIFIED, but NOT RUNTIME-VERIFIED; Deny is not
+enabled.
 
 ## Golden Path
 
@@ -75,9 +80,11 @@ report explicit skips when absent.
 
 Platform values are centralized in
 [`config/platform.env.example`](config/platform.env.example). It targets the
-finalized GitOps `v0.5.0` release for the Platform GP-5 release candidate. The
+finalized GitOps `v0.6.0` release for the Platform GP-6 release candidate. The
 candidate input set is recorded in
-[`v0.5.0-release-manifest.yaml`](releases/v0.5.0-release-manifest.yaml). The
+[`v0.6.0-release-manifest.yaml`](releases/v0.6.0-release-manifest.yaml). The
+released v0.5.0 input set is recorded in
+[`v0.5.0-release-manifest.yaml`](releases/v0.5.0-release-manifest.yaml), the
 released v0.4.0 input set is recorded in
 [`v0.4.0-release-manifest.yaml`](releases/v0.4.0-release-manifest.yaml), the
 released v0.3.0 input set is recorded in
@@ -143,6 +150,16 @@ remote GitOps tag verification. The check names remain `validate` and
 [the GP-5 CI contract](docs/gp-5-ci-contract.md). The exact release candidate
 identity and GP-5 evidence classification are recorded in the
 [`v0.5.0` release manifest](releases/v0.5.0-release-manifest.yaml).
+
+## GP-6 admission contract
+
+GitOps defines a platform-owned ValidatingAdmissionPolicy and binding for the
+`dev` namespace. The initial binding uses Warn and Audit only; Deny is not
+enabled. Platform records the finalized GitOps identity and the static GP-6
+evidence without claiming Kubernetes admission behavior. GP-6 is
+`SOURCE-CONFIRMED`, `TEST-VERIFIED`, and `NOT RUNTIME-VERIFIED`. The exact
+release-candidate identity is recorded in the
+[`v0.6.0` release manifest](releases/v0.6.0-release-manifest.yaml).
 
 ## Verification and rebuild
 
