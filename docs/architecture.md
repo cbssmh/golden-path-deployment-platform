@@ -5,8 +5,9 @@ official manifest. It directly applies the Argo CD installation, the narrow
 `golden-path-platform` AppProject, the deny-all configuration for the existing
 `default` project, and the Root Application. The Root Application reads
 `applications/root` from the public GitOps repository. It owns the Service A
-workload AppProject, Namespace `dev`, and the Service A Application. Service A
-then deploys only its Deployment, Service, and ConfigMap.
+workload and identity AppProjects, Namespace `dev`, and their Applications.
+The identity Application manages only `ServiceAccount/service-a`. The workload
+Application deploys only its Deployment, Service, and ConfigMap.
 
 ## Developer experience
 
@@ -31,7 +32,14 @@ sequenceDiagram
 
 The Service A AppProject restricts its source to the exact public GitOps URL,
 its destination to in-cluster `dev`, and its desired resource kinds to
-Deployment, Service, and ConfigMap. This source/test-confirmed boundary does not
-restrict the cluster-wide Argo controller identity and has not yet been runtime
-verified. Private-repository authentication is out of scope. Application image
-publishing is separate from desired-state changes.
+Deployment, Service, and ConfigMap. The separate identity AppProject permits
+only ServiceAccount in `dev`, preserving the workload boundary. GP-2A Argo
+enforcement is `RUNTIME-VERIFIED`. GP-3 pod-security and identity definitions
+are `SOURCE-CONFIRMED` and `TEST-VERIFIED`, but `NOT RUNTIME-VERIFIED`.
+
+Namespace `dev` selects the Kubernetes v1.36 Restricted Pod Security Standard.
+Service A declares non-root execution, RuntimeDefault seccomp, no privilege
+escalation, no Linux capabilities, a read-only root filesystem, and no
+automatic ServiceAccount token. These controls do not restrict the
+cluster-wide Argo controller identity. Private-repository authentication and
+application image publishing remain separate concerns.

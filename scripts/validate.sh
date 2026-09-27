@@ -5,13 +5,15 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # shellcheck source=/dev/null
 source "${ROOT_DIR}/scripts/load-config.sh"
 
-[[ "${GITOPS_TARGET_REVISION}" == "v0.2.0" ]]
+[[ "${GITOPS_TARGET_REVISION}" == "v0.3.0" ]]
 [[ "${SERVICE_A_IMAGE_DIGEST}" == sha256:* ]]
 ruby "${ROOT_DIR}/tests/static/test-trust-boundary.rb"
+ruby "${ROOT_DIR}/tests/static/test-release-identity.rb"
 grep -F '__GITOPS_REPOSITORY_URL__' "${ROOT_DIR}/bootstrap/argocd/root-application.yaml" >/dev/null
 if [[ -d "${ROOT_DIR}/${GITOPS_LOCAL_PATH}" ]]; then
   kubectl kustomize "${ROOT_DIR}/${GITOPS_LOCAL_PATH}/applications/root" >/dev/null
   kubectl kustomize "${ROOT_DIR}/${GITOPS_LOCAL_PATH}/environments/dev" >/dev/null
+  kubectl kustomize "${ROOT_DIR}/${GITOPS_LOCAL_PATH}/platform/service-accounts/service-a" >/dev/null
   kubectl kustomize "${ROOT_DIR}/${GITOPS_LOCAL_PATH}/services/service-a/overlays/dev" >/dev/null
 else
   echo "SKIP: local GitOps repository not found at ${GITOPS_LOCAL_PATH}."
